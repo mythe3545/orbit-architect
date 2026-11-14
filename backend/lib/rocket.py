@@ -1,3 +1,4 @@
+from data.i18n_parts import part_name
 """Rocket physics (Tsiolkovsky staging) + beginner guide checks. Single source of truth."""
 import math
 
@@ -81,22 +82,22 @@ def analyze(stack: list[StackItem], upgrades: dict[str, int] | None = None, lang
         props = {t["p"]["propellant"] for t in g["tanks"]}
         if g["tanks"] and not g["engines"]:
             t = g["tanks"][-1]
-            issues.append(mk("error", "TANK_NO_ENGINE", name=t["p"]["name"], item_index=t["idx"],
+            issues.append(mk("error", "TANK_NO_ENGINE", name=part_name(t["p"]["id"], t["p"]["name"], lang), item_index=t["idx"],
                                      alternatives=_alts(lambda p, pr=t["p"]["propellant"]: p["category"] == "engine" and p["propellant"] == pr)))
         if g["engines"] and not g["tanks"]:
             e = g["engines"][0]
-            issues.append(mk("error", "ENGINE_NO_TANK", name=e["p"]["name"], item_index=e["idx"],
+            issues.append(mk("error", "ENGINE_NO_TANK", name=part_name(e["p"]["id"], e["p"]["name"], lang), item_index=e["idx"],
                                      alternatives=_alts(lambda p, pr=e["p"]["propellant"]: p["category"] in TANKS and p["propellant"] == pr)))
         for e in g["engines"]:
             if props and e["p"]["propellant"] not in props:
                 tp = next(iter(props))
-                issues.append(mk("error", "PROPELLANT_MISMATCH", name=e["p"]["name"], ep=e["p"]["propellant"], tp=tp, item_index=e["idx"],
+                issues.append(mk("error", "PROPELLANT_MISMATCH", name=part_name(e["p"]["id"], e["p"]["name"], lang), ep=e["p"]["propellant"], tp=tp, item_index=e["idx"],
                                          alternatives=_alts(lambda p, pr=tp: p["category"] == "engine" and p["propellant"] == pr, exclude=e["p"]["id"])))
     structural = [i for i in items if i["p"]["category"] not in ("engine", "booster")]
     for a, b in zip(structural, structural[1:]):
         da, db_ = a["p"]["diameter_m"], b["p"]["diameter_m"]
         if da - db_ > 1.0 and a["p"]["category"] != "aero":
-            issues.append(mk("warning", "OVERHANG", name=a["p"]["name"], da=f"{da:.1f}", db=f"{db_:.1f}", item_index=a["idx"],
+            issues.append(mk("warning", "OVERHANG", name=part_name(a["p"]["id"], a["p"]["name"], lang), da=f"{da:.1f}", db=f"{db_:.1f}", item_index=a["idx"],
                                      alternatives=_alts(lambda p, c=a["p"]["category"], lim=db_ + 0.5: (p["category"] == c or p["category"] == "interstage") and p["diameter_m"] <= lim, exclude=a["p"]["id"])))
     if boosters and not groups:
         issues.append(mk("error", "BOOSTER_NO_CORE", item_index=boosters[0]["idx"], alternatives=_alts(lambda p: p["category"] == "lower")))

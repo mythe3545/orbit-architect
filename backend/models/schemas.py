@@ -77,7 +77,14 @@ class Upgrade(BaseModel):
     max_level: int
 
 
+class Cosmetic(BaseModel):
+    id: str
+    kind: Literal["paint", "flame", "trail", "theme"]
+    price: int
+
+
 class Catalog(BaseModel):
+    cosmetics: list[Cosmetic] = []
     categories: list[Category]
     parts: list[Part]
     rockets: list[FleetRocket]
@@ -162,6 +169,7 @@ class Astronaut(BaseModel):
     missions_flown: int = 0
     achievements: list[str] = []
     challenges_done: list[str] = []
+    owned_cosmetics: list[str] = []
     created_at: datetime = Field(default_factory=_now)
 
 

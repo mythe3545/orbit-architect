@@ -141,6 +141,9 @@ function CrisisCard({ mission, index, onChoose, busy }: { mission: Mission; inde
   );
 }
 
+/** The default design label is stored in English; show it in the current language. */
+export const rocketLabel = (l: string, t: (k: string) => string) => (l === "Custom Rocket" ? t("customRocket") : l);
+
 const RATING: Record<Decision["rating"], { label: string; cls: string }> = {
   optimal: { label: "r.optimal", cls: "text-emerald-300 border-emerald-400/50 bg-[#0b291b]" },
   acceptable: { label: "r.acceptable", cls: "text-amber-200 border-amber-400/50 bg-amber-400/5" },
@@ -280,7 +283,7 @@ export default function Launch() {
           <div className="flex items-center gap-4 rounded-xl border border-cyan-500/20 bg-slate-900/60 p-3" data-testid="launch-rocket-summary">
             <div className="h-20 w-14 blueprint-grid rounded grid place-items-center overflow-hidden"><RocketGraphic stack={stack} parts={parts} scale={1.6} /></div>
             <div>
-              <div className="text-white font-heading">{astro.blueprint.label}</div>
+              <div className="text-white font-heading">{rocketLabel(astro.blueprint.label, t)}</div>
               <div className="font-mono text-[11px] text-slate-400">Δv {((stats?.delta_v_ms ?? 0) / 1000).toFixed(2)} km/s · TWR {(stats?.twr ?? 0).toFixed(2)}</div>
               <Link to="/builder" className="font-mono text-[11px] text-cyan-300 hover:underline" data-testid="modify-design-link">{t("modify")}</Link>
             </div>
@@ -334,7 +337,7 @@ export default function Launch() {
     return (
       <div className="px-4 lg:px-8 py-8 max-w-5xl mx-auto" data-testid="mission-report">
         {popup.length > 0 && <AchievementPopup ids={popup} onDone={closePopup} />}
-        <p className="hud-label mb-2">{t("report.kicker")} · {m.rocket_label} → {m.planet_name}</p>
+        <p className="hud-label mb-2">{t("report.kicker")} · {rocketLabel(m.rocket_label, t)} → {m.planet_name}</p>
         <div className="grid md:grid-cols-[260px_1fr] gap-6 items-center">
           <div className="relative size-[220px] mx-auto">
             <svg viewBox="0 0 160 160" className="size-full -rotate-90">
@@ -449,7 +452,7 @@ export default function Launch() {
 
       <aside className="lg:col-span-4 space-y-4">
         <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-4 space-y-3" data-testid="systems-panel">
-          <div className="hud-label">{t("systems")} · {mission?.rocket_label}</div>
+          <div className="hud-label">{t("systems")} · {rocketLabel(mission?.rocket_label ?? "", t)}</div>
           <Bar icon={Fuel} label={t("fuel")} v={telemetry.fuel} testid="telemetry-fuel" />
           <Bar icon={Shield} label={t("hull")} v={telemetry.hull} testid="telemetry-hull" />
           <Bar icon={Zap} label={t("power")} v={telemetry.power} testid="telemetry-power" />
@@ -469,7 +472,7 @@ export default function Launch() {
               className={cn("rounded-xl border p-4", RATING[lastResult.rating].cls)} data-testid="decision-result">
               <div className="flex items-center justify-between">
                 <span className="font-mono text-[11px] tracking-[0.2em]">{t(RATING[lastResult.rating].label)}</span>
-                <span className="font-mono text-sm text-amber-200">+{lastResult.points} pts</span>
+                <span className="font-mono text-sm text-amber-200">+{lastResult.points} {t("ptsUnit")}</span>
               </div>
               <p className="text-sm text-white mt-2">{lastResult.outcome}</p>
               <Button className="mt-3 w-full" onClick={() => { sfx.click(); setLastResult(null); }} data-testid="continue-flight-button">

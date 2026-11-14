@@ -191,7 +191,7 @@
     @apply font-mono text-[10px] uppercase tracking-[0.2em] text-cyan-300/80 font-semibold;
   }
   .hud-glow {
-    box-shadow: 0 0 25px -8px rgba(0, 229, 255, 0.35), inset 0 0 15px -6px rgba(0, 229, 255, 0.12);
+    box-shadow: 0 0 25px -8px rgba(var(--ui-accent-rgb), 0.35), inset 0 0 15px -6px rgba(var(--ui-accent-rgb), 0.12);
   }
   .hud-corners {
     position: relative;
@@ -203,8 +203,8 @@
     height: 12px;
     pointer-events: none;
   }
-  .hud-corners::before { top: -1px; left: -1px; border-top: 1px solid #00e5ff; border-left: 1px solid #00e5ff; }
-  .hud-corners::after { bottom: -1px; right: -1px; border-bottom: 1px solid #00e5ff; border-right: 1px solid #00e5ff; }
+  .hud-corners::before { top: -1px; left: -1px; border-top: 1px solid var(--ui-accent); border-left: 1px solid var(--ui-accent); }
+  .hud-corners::after { bottom: -1px; right: -1px; border-bottom: 1px solid var(--ui-accent); border-right: 1px solid var(--ui-accent); }
   .scanlines {
     background-image: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0, 0, 0, 0.18) 3px);
   }
@@ -222,3 +222,12 @@
 .ach-pulse { animation: ach-pulse 1.4s ease-in-out infinite; }
 .ach-rays { background: repeating-conic-gradient(from 0deg, rgba(251,191,36,0.16) 0deg 8deg, transparent 8deg 24deg); mask-image: radial-gradient(circle, black 20%, transparent 70%); animation: ach-spin 14s linear infinite; }
 @media (prefers-reduced-motion: reduce) { .ach-glow, .ach-pulse, .ach-rays { animation: none; } }
+
+/* menu colour themes (Settings / style shop): recolour every cyan utility + primary */
+:root { --ui-accent: #00e5ff; --ui-accent-rgb: 0, 229, 255; }
+html[data-ui="emerald"] { --color-cyan-50: #ecfdf5; --color-cyan-100: #d1fae5; --color-cyan-200: #a7f3d0; --color-cyan-300: #6ee7b7; --color-cyan-400: #34d399; --color-cyan-500: #10b981; --color-cyan-600: #059669; --color-cyan-700: #047857; --color-cyan-800: #065f46; --color-cyan-900: #064e3b; --color-cyan-950: #022c22; --primary: #34d399; --ring: #34d399; --sidebar-primary: #34d399; --chart-1: #34d399; --ui-accent: #34d399; --ui-accent-rgb: 52,211,153; }
+html[data-ui="arctic"] { --color-cyan-50: #f0f9ff; --color-cyan-100: #e0f2fe; --color-cyan-200: #bae6fd; --color-cyan-300: #7dd3fc; --color-cyan-400: #38bdf8; --color-cyan-500: #0ea5e9; --color-cyan-600: #0284c7; --color-cyan-700: #0369a1; --color-cyan-800: #075985; --color-cyan-900: #0c4a6e; --color-cyan-950: #082f49; --primary: #7dd3fc; --ring: #7dd3fc; --sidebar-primary: #7dd3fc; --chart-1: #7dd3fc; --ui-accent: #7dd3fc; --ui-accent-rgb: 125,211,252; }
+html[data-ui="mars"] { --color-cyan-50: #fff7ed; --color-cyan-100: #ffedd5; --color-cyan-200: #fed7aa; --color-cyan-300: #fdba74; --color-cyan-400: #fb923c; --color-cyan-500: #f97316; --color-cyan-600: #ea580c; --color-cyan-700: #c2410c; --color-cyan-800: #9a3412; --color-cyan-900: #7c2d12; --color-cyan-950: #431407; --primary: #fb923c; --ring: #fb923c; --sidebar-primary: #fb923c; --chart-1: #fb923c; --ui-accent: #fb923c; --ui-accent-rgb: 251,146,60; }
+html[data-ui="nebula"] { --color-cyan-50: #f5f3ff; --color-cyan-100: #ede9fe; --color-cyan-200: #ddd6fe; --color-cyan-300: #c4b5fd; --color-cyan-400: #a78bfa; --color-cyan-500: #8b5cf6; --color-cyan-600: #7c3aed; --color-cyan-700: #6d28d9; --color-cyan-800: #5b21b6; --color-cyan-900: #4c1d95; --color-cyan-950: #2e1065; --primary: #a78bfa; --ring: #a78bfa; --sidebar-primary: #a78bfa; --chart-1: #a78bfa; --ui-accent: #a78bfa; --ui-accent-rgb: 167,139,250; }
+html[data-ui="gold"] { --color-cyan-50: #fefce8; --color-cyan-100: #fef9c3; --color-cyan-200: #fef08a; --color-cyan-300: #fde047; --color-cyan-400: #facc15; --color-cyan-500: #eab308; --color-cyan-600: #ca8a04; --color-cyan-700: #a16207; --color-cyan-800: #854d0e; --color-cyan-900: #713f12; --color-cyan-950: #422006; --primary: #facc15; --ring: #facc15; --sidebar-primary: #facc15; --chart-1: #facc15; --ui-accent: #facc15; --ui-accent-rgb: 250,204,21; }
+html[data-ui="aurora"] { --color-cyan-50: #fdf2f8; --color-cyan-100: #fce7f3; --color-cyan-200: #fbcfe8; --color-cyan-300: #f9a8d4; --color-cyan-400: #f472b6; --color-cyan-500: #ec4899; --color-cyan-600: #db2777; --color-cyan-700: #be185d; --color-cyan-800: #9d174d; --color-cyan-900: #831843; --color-cyan-950: #500724; --primary: #f472b6; --ring: #f472b6; --sidebar-primary: #f472b6; --chart-1: #f472b6; --ui-accent: #f472b6; --ui-accent-rgb: 244,114,182; }

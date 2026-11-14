@@ -1,6 +1,8 @@
-import { Volume2, Languages, Gauge, Palette, Clapperboard } from "lucide-react";
+import { Volume2, Languages, Gauge, Palette, Clapperboard, LayoutTemplate, Flame } from "lucide-react";
+import { Link } from "react-router-dom";
+import CosmeticGrid from "@/components/CosmeticGrid";
 import { useT, LANG_LABELS } from "@/lib/i18n";
-import { THEMES, updateSettings, useSettings, type Difficulty, type Lang, type RocketColor } from "@/lib/settings";
+import { updateSettings, useSettings, type Difficulty, type Lang } from "@/lib/settings";
 import { sfx } from "@/lib/sound";
 import { cn } from "@/lib/utils";
 
@@ -32,11 +34,15 @@ export default function SettingsPage() {
   const t = useT();
   const s = useSettings();
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
+    <div className="px-4 lg:px-8 py-6 max-w-5xl mx-auto">
       <p className="hud-label mb-1">{t("set.kicker")}</p>
       <h1 className="font-heading text-3xl sm:text-4xl font-bold text-white tracking-tight">{t("set.title")}</h1>
       <p className="text-sm text-slate-400 mt-1 mb-6">{t("set.note")}</p>
       <div className="grid gap-4">
+        <Card icon={LayoutTemplate} title={t("set.menu")} testid="settings-menu-colors">
+          <p className="text-sm text-slate-400 mb-3">{t("set.menuDesc")} <Link to="/hangar?tab=shop" className="text-cyan-300 hover:underline" data-testid="settings-open-shop">{t("shop.open")}</Link></p>
+          <CosmeticGrid kind="theme" mode="settings" />
+        </Card>
         <Card icon={Volume2} title={t("set.sound")} testid="settings-sound">
           <p className="text-sm text-slate-400 mb-3">{t("set.soundDesc")}</p>
           <Seg testid="settings-sound-toggle" value={s.sound ? "on" : "off"} onChange={(v) => updateSettings({ sound: v === "on" })}
@@ -59,24 +65,13 @@ export default function SettingsPage() {
             options={(["easy", "normal", "hard"] as Difficulty[]).map((d) => ({ v: d, label: t(`d.${d}`), desc: t(`d.${d}D`) }))} />
         </Card>
         <Card icon={Palette} title={t("set.color")} testid="settings-color">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {(Object.keys(THEMES) as RocketColor[]).map((c) => {
-              const th = THEMES[c];
-              return (
-                <button key={c} onClick={() => { updateSettings({ color: c }); sfx.click(); }} data-testid={`settings-color-${c}`}
-                  className={cn("rounded-lg border p-3 flex items-center gap-3 transition-[border-color] duration-150", s.color === c ? "border-cyan-300 bg-cyan-300/10" : "border-slate-700 hover:border-slate-500")}>
-                  <div className="flex flex-col items-center">
-                    <div className="w-3 h-3" style={{ background: th.capsule[0], clipPath: "polygon(30% 0,70% 0,100% 100%,0 100%)" }} />
-                    <div className="w-4 h-10 relative" style={{ background: `linear-gradient(to right, ${th.body[0]}, ${th.body[1]}, ${th.body[2]})` }}>
-                      <div className="absolute inset-x-0 top-2 h-0.5" style={{ background: th.band }} />
-                    </div>
-                    <div className="w-3 h-2" style={{ background: th.nozzle[1] }} />
-                  </div>
-                  <span className="text-sm text-left">{t(`c.${c}`)}</span>
-                </button>
-              );
-            })}
-          </div>
+          <CosmeticGrid kind="paint" mode="settings" />
+        </Card>
+        <Card icon={Flame} title={t("set.flame")} testid="settings-flame-trail">
+          <div className="hud-label mb-2">{t("shop.flame")}</div>
+          <CosmeticGrid kind="flame" mode="settings" />
+          <div className="hud-label mt-5 mb-2">{t("shop.trail")}</div>
+          <CosmeticGrid kind="trail" mode="settings" />
         </Card>
         <Card icon={Clapperboard} title={t("set.anim")} testid="settings-animation">
           <div className="hud-label mb-2">{t("set.speed")}</div>

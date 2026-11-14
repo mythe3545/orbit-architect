@@ -1,6 +1,7 @@
 import type { Part, StackItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { THEMES, useSettings } from "@/lib/settings";
+import { FLAMES } from "@/lib/cosmetics";
 
 const PROP_COLOR: Record<string, string> = {
   "RP-1/LOX": "#ffb300",
@@ -16,11 +17,14 @@ export function propColor(p: string | null) {
 
 /** Visual for one stack entry. scale = px per metre of diameter. */
 export function PartShape({ part, qty, scale = 12, flame = false }: { part: Part; qty: number; scale?: number; flame?: boolean }) {
-  const th = THEMES[useSettings().color];
+  const st = useSettings();
+  const th = THEMES[st.color] ?? THEMES.classic;
+  const fl = FLAMES[st.flame] ?? FLAMES.kerosene;
+  const flameBg = `linear-gradient(to bottom, rgb(${fl.core}), rgb(${fl.mid}) 30%, rgba(${fl.outer},0.8) 60%, transparent)`;
   const w = Math.max(14, part.diameter_m * scale);
   const k = scale / 12;
   const cap = `linear-gradient(to bottom, ${th.capsule[0]}, ${th.capsule[1]})`;
-  const body = `linear-gradient(to right, ${th.body[0]}, ${th.body[1]}, ${th.body[2]})`;
+  const body = (th.pattern === "checker" ? `repeating-conic-gradient(#111827 0 25%, transparent 0 50%) 0 0 / ${w}px ${w}px, ` : "") + `linear-gradient(to right, ${th.body[0]}, ${th.body[1]}, ${th.body[2]})`;
   const noz = `linear-gradient(to bottom, ${th.nozzle[0]}, ${th.nozzle[1]})`;
   switch (part.category) {
     case "crew": {
@@ -54,7 +58,7 @@ export function PartShape({ part, qty, scale = 12, flame = false }: { part: Part
             <div key={i} className="flex flex-col items-center">
               <div style={{ width: nw, height: nh, clipPath: "polygon(30% 0, 70% 0, 100% 100%, 0 100%)", background: noz }} />
               {flame && (
-                <div style={{ width: nw * 0.8, height: nh * 2.2 }} className="origin-top animate-flame rounded-b-full bg-gradient-to-b from-amber-200 via-orange-400 to-transparent" />
+                <div style={{ width: nw * 0.8, height: nh * 2.2, background: flameBg }} className="origin-top animate-flame rounded-b-full" />
               )}
             </div>
           ))}
@@ -68,7 +72,7 @@ export function PartShape({ part, qty, scale = 12, flame = false }: { part: Part
           {Array.from({ length: qty }).map((_, i) => (
             <div key={i} className="flex flex-col items-center">
               <div style={{ width: w, height: h, background: body }} className="rounded-t-full border border-amber-300/30" />
-              {flame && <div style={{ width: w * 0.8, height: 30 * k }} className="origin-top animate-flame rounded-b-full bg-gradient-to-b from-amber-100 via-orange-400 to-transparent" />}
+              {flame && <div style={{ width: w * 0.8, height: 30 * k, background: flameBg }} className="origin-top animate-flame rounded-b-full" />}
             </div>
           ))}
         </div>

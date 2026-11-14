@@ -16,7 +16,8 @@ export interface Planet {
   obstacle_count: number; image_query: string; image_url?: string | null; fact: string;
 }
 export interface Upgrade { id: string; name: string; description: string; base_cost: number; max_level: number }
-export interface Catalog { categories: Category[]; parts: Part[]; rockets: FleetRocket[]; planets: Planet[]; upgrades: Upgrade[] }
+export interface Cosmetic { id: string; kind: "paint" | "flame" | "trail" | "theme"; price: number }
+export interface Catalog { categories: Category[]; parts: Part[]; rockets: FleetRocket[]; planets: Planet[]; upgrades: Upgrade[]; cosmetics: Cosmetic[] }
 export interface NasaImage { title: string; url: string; nasa_id: string; date: string | null }
 
 export interface RocketStats {
@@ -32,7 +33,7 @@ export interface Blueprint { label: string; stack: StackItem[] }
 export interface Astronaut {
   id: string; full_name: string; callsign: string; agency_id: string; specialization: string; nationality: string;
   points: number; total_points_earned: number; explored: string[]; upgrades: Record<string, number>;
-  blueprint: Blueprint; missions_flown: number; achievements: string[]; challenges_done: string[]; created_at: string;
+  blueprint: Blueprint; missions_flown: number; achievements: string[]; challenges_done: string[]; owned_cosmetics: string[]; created_at: string;
 }
 export interface EnrollRequest {
   full_name: string; callsign: string; agency_id: string; specialization: string; nationality: string; pin: string;

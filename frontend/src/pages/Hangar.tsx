@@ -2,7 +2,8 @@ import { useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Rocket, Wrench, Star, Trophy, Orbit, ShieldAlert, ArrowUpCircle } from "lucide-react";
+import { Rocket, Wrench, Star, Trophy, Orbit, ShieldAlert, ArrowUpCircle, Paintbrush, Flame, Sparkles, LayoutTemplate } from "lucide-react";
+import CosmeticGrid from "@/components/CosmeticGrid";
 import { apiPost, ApiError } from "@/lib/api";
 import { useAnalysis, useAstronaut, useAstronautId, useCatalog, useNasaImages, useSaveBlueprint } from "@/lib/hooks";
 import type { Astronaut, FleetRocket, Part, Upgrade } from "@/lib/types";
@@ -62,11 +63,11 @@ function UpgradeRow({ u, astro }: { u: Upgrade; astro: Astronaut }) {
         <div className="text-sm text-slate-400">{u.description}</div>
         <div className="flex gap-1 mt-2">
           {Array.from({ length: u.max_level }).map((_, i) => <div key={i} className={cn("h-1.5 w-8 rounded", i < level ? "bg-cyan-300" : "bg-slate-800")} />)}
-          <span className="font-mono text-[10px] text-slate-400 ml-2" data-testid={`upgrade-level-${u.id}`}>LV {level}/{u.max_level}</span>
+          <span className="font-mono text-[10px] text-slate-400 ml-2" data-testid={`upgrade-level-${u.id}`}>{t("lvl")} {level}/{u.max_level}</span>
         </div>
       </div>
       <Button disabled={maxed || astro.points < cost || m.isPending} onClick={() => m.mutate()} variant={maxed ? "outline" : "default"} data-testid={`upgrade-buy-${u.id}`} className="font-mono">
-        {maxed ? t("maxed") : <><ArrowUpCircle className="size-4" /> {cost} pts</>}
+        {maxed ? t("maxed") : <><ArrowUpCircle className="size-4" /> {cost} {t("ptsUnit")}</>}
       </Button>
     </div>
   );
@@ -110,6 +111,7 @@ export default function Hangar() {
         <TabsList className="mb-5">
           <TabsTrigger value="fleet" data-testid="hangar-tab-fleet">{t("tab.fleet")}</TabsTrigger>
           <TabsTrigger value="upgrades" data-testid="hangar-tab-upgrades">{t("tab.upgrades")}</TabsTrigger>
+          <TabsTrigger value="shop" data-testid="hangar-tab-shop">{t("shop.tab")}</TabsTrigger>
         </TabsList>
         <TabsContent value="fleet">
           {!catalog ? <p className="font-mono text-sm text-slate-500">{t("loadingFleet")}</p> : (
@@ -126,6 +128,21 @@ export default function Hangar() {
           </div>
           <div className="space-y-3">
             {astro && catalog?.upgrades.map((u) => <UpgradeRow key={u.id} u={u} astro={astro} />)}
+          </div>
+        </TabsContent>
+        <TabsContent value="shop">
+          <div className="flex flex-wrap items-center gap-3 mb-5 rounded-xl border border-amber-400/30 bg-amber-400/5 p-4" data-testid="shop-balance">
+            <Star className="size-5 text-amber-300" />
+            <div><div className="hud-label text-amber-300/80">{t("available")}</div><div className="font-mono text-2xl text-amber-200 tabular-nums">{astro?.points ?? 0}</div></div>
+            <p className="ml-auto max-w-md text-sm text-slate-400">{t("shop.desc")}</p>
+          </div>
+          <div className="space-y-7">
+            {([["paint", Paintbrush], ["flame", Flame], ["trail", Sparkles], ["theme", LayoutTemplate]] as const).map(([k, Icon]) => (
+              <section key={k} data-testid={`shop-section-${k}`}>
+                <h3 className="flex items-center gap-2 font-heading text-lg text-white mb-3"><Icon className="size-4 text-cyan-300" />{t(`shop.${k}`)}</h3>
+                <CosmeticGrid kind={k} mode="shop" />
+              </section>
+            ))}
           </div>
         </TabsContent>
       </Tabs>

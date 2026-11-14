@@ -1,6 +1,6 @@
 import { NavLink, Navigate, Outlet, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { Hammer, Rocket, Warehouse, IdCard, LogOut, Star, Settings as Cog, Award } from "lucide-react";
+import { Hammer, Rocket, Warehouse, IdCard, LogOut, Star, Settings as Cog, Award, BookOpen } from "lucide-react";
 import { titleFor } from "@/lib/achievements";
 import { useT } from "@/lib/i18n";
 import { useSettings } from "@/lib/settings";
@@ -14,6 +14,7 @@ const NAV = [
   { to: "/hangar", label: "nav.hangar", icon: Warehouse },
   { to: "/dossier", label: "nav.dossier", icon: IdCard },
   { to: "/achievements", label: "nav.ach", icon: Award },
+  { to: "/tutorial", label: "nav.guide", icon: BookOpen },
   { to: "/settings", label: "nav.settings", icon: Cog },
 ];
 
@@ -49,6 +50,7 @@ export default function AppShell() {
                 key={to}
                 to={to}
                 data-testid={`nav-${to.slice(1)}`}
+                title={t(label)}
                 className={({ isActive }) =>
                   cn(
                     "flex items-center gap-1.5 px-3 h-9 rounded-md text-sm whitespace-nowrap transition-colors duration-200",
@@ -57,7 +59,7 @@ export default function AppShell() {
                 }
               >
                 <Icon className="size-4" />
-                <span className="hidden md:inline">{t(label)}</span>
+                <span className="hidden xl:inline">{t(label)}</span>
               </NavLink>
             ))}
           </nav>
@@ -65,7 +67,7 @@ export default function AppShell() {
             <div className="flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-amber-400/10 px-3 h-8" data-testid="hud-points">
               <Star className="size-3.5 text-amber-300" />
               <span className="font-mono text-sm text-amber-200 tabular-nums">{astro?.points ?? 0}</span>
-              <span className="font-mono text-[10px] text-amber-300/70 hidden sm:inline">PTS</span>
+              <span className="font-mono text-[10px] text-amber-300/70 hidden sm:inline uppercase">{t("ptsUnit")}</span>
             </div>
             <div className="hidden lg:flex flex-col leading-tight text-right" data-testid="hud-callsign">
               <span className="hud-label">{t("callsign")}</span>
@@ -75,7 +77,7 @@ export default function AppShell() {
               onClick={logout}
               data-testid="logout-button"
               className="size-9 grid place-items-center rounded-md border border-slate-700 text-slate-400 hover:text-rose-300 hover:border-rose-400/50 transition-colors duration-200"
-              aria-label="Log out"
+              aria-label={t("logout")}
             >
               <LogOut className="size-4" />
             </button>

@@ -70,7 +70,7 @@ export default function Dossier() {
                 {done.map((m) => (
                   <TableRow key={m.id} data-testid={`mission-row-${m.id}`}>
                     <TableCell className="font-mono text-xs">{new Date(m.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell>{m.rocket_label}</TableCell>
+                    <TableCell>{m.rocket_label === "Custom Rocket" ? t("customRocket") : m.rocket_label}</TableCell>
                     <TableCell>{m.planet_name}</TableCell>
                     <TableCell><span className={cn("font-mono text-[11px] px-2 py-0.5 rounded border", STATUS_CLS[m.status])}>{t(`s.${m.status}`)} · {m.success_pct}%</span></TableCell>
                     <TableCell className="text-right font-mono text-amber-200">+{m.points.total}</TableCell>

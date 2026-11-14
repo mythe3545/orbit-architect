@@ -3,6 +3,7 @@ import os
 
 from fastapi import APIRouter, HTTPException
 
+from data.cosmetics import COSMETIC_BY_ID
 from data.nasa import UPGRADE_BY_ID
 from lib.db import db
 from models.schemas import Astronaut, Blueprint, EnrollRequest, LoginRequest, Mission
@@ -72,6 +73,22 @@ async def buy_upgrade(astronaut_id: str, upgrade_id: str):
                                          {"$inc": {"points": -cost, f"upgrades.{upgrade_id}": 1}})
     if res.modified_count == 0:
         raise HTTPException(status_code=400, detail=f"Not enough points ({cost} needed)")
+    return await get_astronaut_or_404(astronaut_id)
+
+
+@router.post("/{astronaut_id}/cosmetics/{cosmetic_id}", response_model=Astronaut)
+async def buy_cosmetic(astronaut_id: str, cosmetic_id: str):
+    """Buy a style-shop item with points (free items are always owned)."""
+    a = await get_astronaut_or_404(astronaut_id)
+    c = COSMETIC_BY_ID.get(cosmetic_id)
+    if not c:
+        raise HTTPException(status_code=404, detail="Item not found")
+    if c["price"] == 0 or cosmetic_id in a.owned_cosmetics:
+        raise HTTPException(status_code=400, detail="Item already owned")
+    res = await db.astronauts.update_one({"id": astronaut_id, "points": {"$gte": c["price"]}, "owned_cosmetics": {"$ne": cosmetic_id}},
+                                         {"$inc": {"points": -c["price"]}, "$addToSet": {"owned_cosmetics": cosmetic_id}})
+    if res.modified_count == 0:
+        raise HTTPException(status_code=400, detail=f"Not enough points ({c['price']} needed)")
     return await get_astronaut_or_404(astronaut_id)
 
 

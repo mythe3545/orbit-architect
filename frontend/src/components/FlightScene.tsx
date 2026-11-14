@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useRef } from "react";
 import type { Part, StackItem } from "@/lib/types";
 import { THEMES, useSettings, type Theme } from "@/lib/settings";
+import { FLAMES, type FlameStyle } from "@/lib/cosmetics";
+
+let FL: FlameStyle = FLAMES.kerosene;
+const hsl = (h: number) => { const f = (n: number) => { const k = (n + h / 30) % 12; return Math.round(255 * (0.5 - 0.5 * Math.max(-1, Math.min(k - 3, 9 - k, 1)))); }; return `${f(0)},${f(8)},${f(4)}`; };
 
 export type FlightEvent = "liftoff" | "maxq" | "booster" | "stage" | "tli" | "arrival";
 
@@ -65,6 +69,11 @@ function drawSeg(ctx: CanvasRenderingContext2D, seg: Seg, cx: number, y: number,
     const gr = ctx.createLinearGradient(x, 0, x + w, 0);
     gr.addColorStop(0, th.body[0]); gr.addColorStop(0.4, th.body[1]); gr.addColorStop(1, th.body[2]);
     ctx.fillStyle = gr; ctx.fillRect(x, y, w, h);
+    if (th.pattern === "checker") {
+      const cell = w / 2, rows = Math.max(1, Math.round(h / cell));
+      ctx.fillStyle = "#111827";
+      for (let rI = 0; rI < rows; rI++) ctx.fillRect(x + ((rI % 2) * cell), y + (rI * h) / rows, cell, h / rows);
+    }
     ctx.fillStyle = th.band; ctx.fillRect(x, y + h * 0.22, w, Math.max(2, h * 0.05)); ctx.fillRect(x, y + h - Math.max(2, h * 0.04), w, Math.max(2, h * 0.04));
     ctx.fillStyle = "rgba(0,0,0,0.18)"; ctx.fillRect(x + w * 0.78, y, w * 0.22, h);
   } else if (c === "interstage") {
@@ -121,11 +130,11 @@ function flame(ctx: CanvasRenderingContext2D, e: { x: number; y: number; w: numb
   const f = 0.85 + 0.3 * Math.sin(t * 40 + e.x);
   const L = len * f, W = e.w * spread;
   const gr = ctx.createLinearGradient(0, e.y, 0, e.y + L);
-  gr.addColorStop(0, "rgba(255,255,240,0.95)"); gr.addColorStop(0.25, "rgba(255,200,90,0.9)"); gr.addColorStop(0.6, "rgba(255,110,20,0.55)"); gr.addColorStop(1, "rgba(255,60,0,0)");
+  gr.addColorStop(0, `rgba(${FL.core},0.95)`); gr.addColorStop(0.25, `rgba(${FL.mid},0.9)`); gr.addColorStop(0.6, `rgba(${FL.outer},0.55)`); gr.addColorStop(1, `rgba(${FL.tail},0)`);
   ctx.fillStyle = gr;
   ctx.beginPath(); ctx.moveTo(e.x - e.w / 2, e.y); ctx.lineTo(e.x + e.w / 2, e.y); ctx.quadraticCurveTo(e.x + W / 2, e.y + L * 0.4, e.x, e.y + L); ctx.quadraticCurveTo(e.x - W / 2, e.y + L * 0.4, e.x - e.w / 2, e.y); ctx.fill();
   const glow = ctx.createRadialGradient(e.x, e.y + 4, 0, e.x, e.y + 4, e.w * 2.5);
-  glow.addColorStop(0, "rgba(255,220,150,0.6)"); glow.addColorStop(1, "rgba(255,120,0,0)");
+  glow.addColorStop(0, `rgba(${FL.glow},0.6)`); glow.addColorStop(1, `rgba(${FL.outer},0)`);
   ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(e.x, e.y + 4, e.w * 2.5, 0, Math.PI * 2); ctx.fill();
 }
 
@@ -143,8 +152,9 @@ export default function FlightScene(props: FlightSceneProps) {
   const layout = useMemo(() => buildLayout(props.stack, props.parts), [props.stack, props.parts]);
   const pr = useRef(props);
   pr.current = props;
-  const conf = useRef({ th: THEMES[settings.color], shake: settings.shake });
-  conf.current = { th: THEMES[settings.color], shake: settings.shake };
+  const pick = () => ({ th: THEMES[settings.color] ?? THEMES.classic, shake: settings.shake, flame: FLAMES[settings.flame] ?? FLAMES.kerosene, trail: settings.trail });
+  const conf = useRef(pick());
+  conf.current = pick();
   const img = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
@@ -164,6 +174,26 @@ export default function FlightScene(props: FlightSceneProps) {
     const parts: Particle[] = [];
     const debris: Debris[] = [];
     const rnd = (a: number, b: number) => a + Math.random() * (b - a);
+    // cosmetic flight trail (shop item): emitted behind the engines, additive glow
+    const trailP: { x: number; y: number; vx: number; vy: number; r: number; a: number; d: number; c: string; tw: boolean }[] = [];
+    const emit = (kind: string, x: number, y: number, dx: number, dy: number, t: number) => {
+      if (kind === "sparks") for (let i = 0; i < 2; i++) trailP.push({ x, y, vx: dx * rnd(1, 3) + rnd(-1, 1), vy: dy * rnd(1, 3) + rnd(-1, 1), r: rnd(1, 2.2), a: 0.95, d: 0.93, c: `255,${Math.round(rnd(150, 220))},60`, tw: false });
+      else if (kind === "ion") { trailP.push({ x, y, vx: dx * 0.6, vy: dy * 0.6, r: 3.2, a: 0.5, d: 0.962, c: "56,189,248", tw: false }); trailP.push({ x, y, vx: dx * 0.6, vy: dy * 0.6, r: 1.3, a: 0.9, d: 0.95, c: "224,242,254", tw: false }); }
+      else if (kind === "stardust") for (let i = 0; i < 2; i++) trailP.push({ x: x + rnd(-4, 4), y: y + rnd(-4, 4), vx: dx * 0.4 + rnd(-0.4, 0.4), vy: dy * 0.4 + rnd(-0.4, 0.4), r: rnd(0.8, 1.9), a: 1, d: 0.975, c: Math.random() > 0.5 ? "255,255,255" : "191,219,254", tw: true });
+      else if (kind === "rainbow") trailP.push({ x, y, vx: dx * 0.8, vy: dy * 0.8, r: 3.6, a: 0.6, d: 0.975, c: hsl((t * 140) % 360), tw: false });
+      if (trailP.length > 700) trailP.splice(0, trailP.length - 700);
+    };
+    const drawTrail = (shift: number, t: number) => {
+      ctx.globalCompositeOperation = "lighter";
+      for (let i = trailP.length - 1; i >= 0; i--) {
+        const p = trailP[i];
+        p.x += p.vx; p.y += p.vy + shift; p.a *= p.d;
+        if (p.a < 0.03) { trailP.splice(i, 1); continue; }
+        const a = p.tw ? p.a * (0.55 + 0.45 * Math.sin(t * 9 + i)) : p.a;
+        ctx.fillStyle = `rgba(${p.c},${a})`; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalCompositeOperation = "source-over";
+    };
     const stars = Array.from({ length: 260 }, () => ({ x: Math.random(), y: Math.random(), z: Math.random() }));
     const clouds = Array.from({ length: 14 }, () => ({ x: Math.random(), wy: rnd(300, 3200), w: rnd(120, 340), a: rnd(0.25, 0.6) }));
     const stageTimes = layout.drops.map((g, i) => ({ g, p: 15 + i * (12 / Math.max(1, layout.drops.length)) }));
@@ -182,7 +212,8 @@ export default function FlightScene(props: FlightSceneProps) {
     const loop = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000); last = now;
       const t = now / 1000;
-      const P = pr.current, { th, shake } = conf.current;
+      const P = pr.current, { th, shake, trail } = conf.current;
+      FL = conf.current.flame;
       const W = cv.clientWidth, H = cv.clientHeight;
       disp += (P.progress - disp) * Math.min(1, dt * 6);
       const ap = clamp(disp / 30), ignited = P.phase === "flight" || P.count <= 1;
@@ -271,6 +302,7 @@ export default function FlightScene(props: FlightSceneProps) {
           ctx.globalCompositeOperation = "lighter";
           exits.forEach((e) => flame(ctx, e, e.w * (3 + ap * 5) * inten, 1 + ap * 3, t));
           ctx.globalCompositeOperation = "source-over";
+          if (P.phase === "flight" && trail !== "none") exits.slice(0, 4).forEach((e) => emit(trail, e.x + rnd(-e.w, e.w) * 0.3, e.y + e.w * (2 + ap * 3), 0, 2.2, t));
           if (ap < 0.75) {
             const n = P.phase === "countdown" ? 1 : 3;
             exits.forEach((e) => {
@@ -298,6 +330,7 @@ export default function FlightScene(props: FlightSceneProps) {
           ctx.fillStyle = `rgba(${p.c},${p.a})`; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
         }
         if (parts.length > 500) parts.splice(0, parts.length - 500);
+        drawTrail(camDelta, t);
         // debris
         debris.forEach((d) => {
           d.vy += 0.12; d.y += d.vy + camDelta * 0.2; d.x += d.vx; d.rot += d.vr * dt;
@@ -388,6 +421,8 @@ export default function FlightScene(props: FlightSceneProps) {
         const cs = (H * 0.13) / rh;
         const burning = !P.alert && (tt < 0.1 || tt > 0.9 || Math.abs(tt - 0.5) < 0.025);
         parts.push({ x: cx2, y: cy2, vx: 0, vy: 0, r: 1.5, a: 0.5, life: 0, c: "0,229,255" });
+        if (trail !== "none") { const L2 = Math.hypot(ax - cx2, ay - cy2) || 1; emit(trail, cx2, cy2, -(ax - cx2) / L2, -(ay - cy2) / L2, t); }
+        drawTrail(0, t);
         for (let i = parts.length - 1; i >= 0; i--) { const p = parts[i]; p.a *= 0.97; if (p.a < 0.03) { parts.splice(i, 1); continue; } ctx.fillStyle = `rgba(${p.c},${p.a})`; ctx.fillRect(p.x, p.y, p.r, p.r); }
         ctx.save(); ctx.translate(cx2, cy2); ctx.rotate(ang); ctx.translate(0, -rh * cs / 2);
         const ex2: { x: number; y: number; w: number }[] = [];
