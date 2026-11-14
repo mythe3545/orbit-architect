@@ -1,13 +1,15 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
+@import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource-variable/space-grotesk";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --font-heading: var(--font-sans);
-    --font-sans: 'Geist Variable', sans-serif;
+    --font-heading: 'Space Grotesk Variable', sans-serif;
+    --font-sans: 'Space Grotesk Variable', sans-serif;
+    --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -46,75 +48,104 @@
     --radius-2xl: calc(var(--radius) * 1.8);
     --radius-3xl: calc(var(--radius) * 2.2);
     --radius-4xl: calc(var(--radius) * 2.6);
+    --animate-hud-shake: hud-shake 0.12s linear infinite;
+    --animate-star-drift: star-drift 18s linear infinite;
+    --animate-flame: flame 0.18s ease-in-out infinite alternate;
+    --animate-scan: scan 3.5s linear infinite;
+    --animate-urgent: urgent 0.9s ease-in-out infinite;
+}
+
+@keyframes hud-shake {
+    0% { transform: translate(0, 0); }
+    25% { transform: translate(-2px, 1px); }
+    50% { transform: translate(2px, -1px); }
+    75% { transform: translate(-1px, -2px); }
+    100% { transform: translate(1px, 2px); }
+}
+@keyframes star-drift {
+    from { background-position: 0 0, 0 0, 0 0; }
+    to { background-position: -400px 200px, -200px 100px, -100px 50px; }
+}
+@keyframes flame {
+    from { transform: scaleY(0.85); opacity: 0.85; }
+    to { transform: scaleY(1.15); opacity: 1; }
+}
+@keyframes scan {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(100vh); }
+}
+@keyframes urgent {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(251, 113, 133, 0.0); }
+    50% { box-shadow: 0 0 0 6px rgba(251, 113, 133, 0.25); }
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    --background: #f4f6f9;
+    --foreground: #0b1220;
+    --card: #ffffff;
+    --card-foreground: #0b1220;
+    --popover: #ffffff;
+    --popover-foreground: #0b1220;
+    --primary: #00b8d4;
+    --primary-foreground: #021526;
+    --secondary: #e6eaf0;
+    --secondary-foreground: #0b1220;
+    --muted: #e6eaf0;
+    --muted-foreground: #5b6779;
+    --accent: #e6eaf0;
+    --accent-foreground: #0b1220;
+    --destructive: #e11d48;
+    --border: #d5dbe4;
+    --input: #d5dbe4;
+    --ring: #00b8d4;
+    --chart-1: #00e5ff;
+    --chart-2: #ffb300;
+    --chart-3: #34d399;
+    --chart-4: #fb7185;
+    --chart-5: #94a3b8;
+    --radius: 0.5rem;
+    --sidebar: #ffffff;
+    --sidebar-foreground: #0b1220;
+    --sidebar-primary: #00b8d4;
+    --sidebar-primary-foreground: #021526;
+    --sidebar-accent: #e6eaf0;
+    --sidebar-accent-foreground: #0b1220;
+    --sidebar-border: #d5dbe4;
+    --sidebar-ring: #00b8d4;
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+    --background: #070b12;
+    --foreground: #f1f5f9;
+    --card: #0d1424;
+    --card-foreground: #e2e8f0;
+    --popover: #0d1424;
+    --popover-foreground: #e2e8f0;
+    --primary: #00e5ff;
+    --primary-foreground: #021526;
+    --secondary: #152036;
+    --secondary-foreground: #e2e8f0;
+    --muted: #111a2c;
+    --muted-foreground: #94a3b8;
+    --accent: #152036;
+    --accent-foreground: #f1f5f9;
+    --destructive: #fb7185;
+    --border: rgba(0, 229, 255, 0.16);
+    --input: rgba(0, 229, 255, 0.22);
+    --ring: #00e5ff;
+    --chart-1: #00e5ff;
+    --chart-2: #ffb300;
+    --chart-3: #34d399;
+    --chart-4: #fb7185;
+    --chart-5: #94a3b8;
+    --sidebar: #0d1424;
+    --sidebar-foreground: #e2e8f0;
+    --sidebar-primary: #00e5ff;
+    --sidebar-primary-foreground: #021526;
+    --sidebar-accent: #152036;
+    --sidebar-accent-foreground: #f1f5f9;
+    --sidebar-border: rgba(0, 229, 255, 0.16);
+    --sidebar-ring: #00e5ff;
 }
 
 @layer base {
@@ -122,9 +153,53 @@
     @apply border-border outline-ring/50;
     }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
     }
   html {
     @apply font-sans;
     }
+}
+
+@layer utilities {
+  .blueprint-grid {
+    background-color: #050914;
+    background-image:
+      radial-gradient(rgba(0, 229, 255, 0.16) 1px, transparent 0),
+      linear-gradient(to right, rgba(0, 229, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 229, 255, 0.05) 1px, transparent 1px);
+    background-size: 24px 24px, 24px 24px, 24px 24px;
+  }
+  .starfield {
+    background-color: #03060d;
+    background-image:
+      radial-gradient(1px 1px at 20px 30px, #fff, transparent),
+      radial-gradient(1px 1px at 120px 80px, rgba(255,255,255,0.7), transparent),
+      radial-gradient(1.5px 1.5px at 60px 150px, rgba(0,229,255,0.8), transparent);
+    background-size: 200px 200px, 160px 160px, 240px 240px;
+  }
+  .hud-label {
+    @apply font-mono text-[10px] uppercase tracking-[0.2em] text-cyan-300/80 font-semibold;
+  }
+  .hud-glow {
+    box-shadow: 0 0 25px -8px rgba(0, 229, 255, 0.35), inset 0 0 15px -6px rgba(0, 229, 255, 0.12);
+  }
+  .hud-corners {
+    position: relative;
+  }
+  .hud-corners::before, .hud-corners::after {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    pointer-events: none;
+  }
+  .hud-corners::before { top: -1px; left: -1px; border-top: 1px solid #00e5ff; border-left: 1px solid #00e5ff; }
+  .hud-corners::after { bottom: -1px; right: -1px; border-bottom: 1px solid #00e5ff; border-right: 1px solid #00e5ff; }
+  .scanlines {
+    background-image: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0, 0, 0, 0.18) 3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hud-shake, .animate-star-drift, .animate-scan { animation: none !important; }
 }

@@ -1,0 +1,220 @@
+{
+  "theme_strategy": {
+    "default_mode": "dark",
+    "style_fusion": "Mission Control Technical HUD (blueprint grid, isometric telemetry, glowing reticles, high-contrast amber/cyan/emerald status gauges) blended with Clean Futuristic SpaceX aesthetics (ultra-crisp borders, minimalist white/graphite typography, segmented cards, pill badges).",
+    "emotional_tone": "Astronaut Command Simulation: precise, authoritative, immersive, cinematic, high-stakes decision making with real NASA telemetry aesthetics.",
+    "viewport_priority": "Desktop-first command center with multi-panel HUD and responsive mobile adaptations (stacking modules into tabs/sheets)."
+  },
+  "typography": {
+    "font_family_heading": "Space Grotesk, sans-serif",
+    "font_family_body": "JetBrains Mono, monospace",
+    "font_family_accent": "IBM Plex Mono, monospace",
+    "css_import": "@import \"@fontsource-variable/space-grotesk\";\n@import \"@fontsource-variable/jetbrains-mono\";",
+    "scale_px": {
+      "display": 56,
+      "h1": 42,
+      "h2": 32,
+      "h3": 22,
+      "body": 16,
+      "caption": 14
+    },
+    "rules": {
+      "display_headings": "font-heading font-bold tracking-tight uppercase",
+      "labels_and_callouts": "font-mono text-xs uppercase tracking-[0.18em] text-cyan-400/90 font-semibold",
+      "body_text": "font-sans text-sm sm:text-base leading-relaxed tracking-normal text-slate-200"
+    }
+  },
+  "colors": {
+    "surfaces": [
+      {
+        "name": "page",
+        "kind": "solid",
+        "bg": "#070B12",
+        "on_bg": "#F1F5F9",
+        "on_bg_muted": "#94A3B8"
+      },
+      {
+        "name": "hud_panel",
+        "kind": "solid",
+        "bg": "#0D1424",
+        "on_bg": "#E2E8F0",
+        "on_bg_muted": "#94A3B8"
+      },
+      {
+        "name": "blueprint_canvas",
+        "kind": "solid",
+        "bg": "#050914",
+        "on_bg": "#38BDF8",
+        "on_bg_muted": "#0284C7"
+      },
+      {
+        "name": "danger_card",
+        "kind": "solid",
+        "bg": "#2A0E15",
+        "on_bg": "#FECDD3",
+        "on_bg_muted": "#FDA4AF"
+      },
+      {
+        "name": "success_card",
+        "kind": "solid",
+        "bg": "#0B291B",
+        "on_bg": "#A7F3D0",
+        "on_bg_muted": "#6EE7B7"
+      },
+      {
+        "name": "hero_glass",
+        "kind": "glass",
+        "contrast_against": "#0A1120",
+        "guarantee": "backdrop-blur-xl bg-slate-950/80 border border-cyan-500/20 shadow-2xl",
+        "on_bg": "#FFFFFF",
+        "on_bg_muted": "#94A3B8",
+        "roles": {
+          "link": "#38BDF8",
+          "error": "#FB7185",
+          "success": "#34D399",
+          "warning": "#FBBF24"
+        }
+      }
+    ],
+    "accent": "#00E5FF",
+    "on_accent": "#021526",
+    "secondary_accent": "#FFB300",
+    "on_secondary": "#1A1000",
+    "border_cyan": "rgba(0, 229, 255, 0.2)",
+    "grid_line": "rgba(14, 165, 233, 0.08)"
+  },
+  "entry_surfaces": {
+    "/": "Branded Mission Control Entry — split screen: left Astronaut Enrollment terminal (callsign, PIN, specialization, agency ID), right live telemetry stream with NASA rocket schematics and flight readiness status.",
+    "/builder": "Proteus-like Rocket Assembly Workspace — left NASA part inventory library, center blueprint canvas with live stage stacking & drag reorder, right telemetry & compatibility diagnostics panel.",
+    "/simulation": "Orbital Flight & Planetary Launch Simulation — top flight HUD telemetry (TWR, velocity, altitude, delta-v), center trajectory starfield viewport with timed obstacle crisis overlays, right decision log & planet destination tracker.",
+    "/hangar": "NASA Historic Fleet Hangar & Upgrade Depot — filterable gallery of legendary NASA rockets (Saturn V, Space Shuttle, SLS, Atlas V, Delta IV Heavy) with NASA specs, point unlock triggers, and upgrade workshop.",
+    "/profile": "Astronaut Flight Dossier & Mission Log — flight history, explored celestial bodies, badge credentials, total flight points, and simulation performance charts."
+  },
+  "layout_and_grids": {
+    "shell_layout": "Top HUD Bar (Agency status, MET timer, active astronaut callsign, point balance, sound toggle) + Main Content Viewport + Bottom Diagnostic Status Strip.",
+    "builder_grid": "grid grid-cols-1 lg:grid-cols-12 gap-4 h-[calc(100vh-8rem)]",
+    "builder_columns": {
+      "parts_library": "lg:col-span-3 overflow-y-auto bg-slate-900/60 border border-cyan-500/20 rounded-xl p-4 flex flex-col",
+      "blueprint_stage": "lg:col-span-6 relative bg-slate-950/90 border border-cyan-500/30 rounded-xl p-6 overflow-hidden flex flex-col items-center justify-center blueprint-grid-pattern",
+      "telemetry_guide": "lg:col-span-3 overflow-y-auto bg-slate-900/60 border border-cyan-500/20 rounded-xl p-4 flex flex-col space-y-4"
+    },
+    "simulation_grid": "grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-[calc(100vh-8rem)]",
+    "simulation_columns": {
+      "nav_trajectory": "lg:col-span-8 relative bg-slate-950/90 border border-cyan-500/30 rounded-xl p-6 overflow-hidden flex flex-col justify-between",
+      "crisis_and_systems": "lg:col-span-4 bg-slate-900/80 border border-slate-800 rounded-xl p-5 flex flex-col space-y-4"
+    },
+    "hangar_grid": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6"
+  },
+  "visual_enhancers": {
+    "blueprint_grid": "background-image: radial-gradient(rgba(0, 229, 255, 0.15) 1px, transparent 0), linear-gradient(to right, rgba(0, 229, 255, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 229, 255, 0.05) 1px, transparent 1px); background-size: 24px 24px, 24px 24px, 24px 24px;",
+    "hud_corner_accents": "Use 1px SVG corner crosshairs / L-brackets on key cards (e.g. ::before and ::after pseudo elements with border-t border-l border-cyan-400).",
+    "glow_effects": "box-shadow: 0 0 25px -5px rgba(0, 229, 255, 0.25), inset 0 0 15px -3px rgba(0, 229, 255, 0.1)",
+    "scanline_effect": "Subtle 2% opacity repeating linear gradient (to bottom, transparent 50%, rgba(0, 0, 0, 0.4) 51%) for CRT/HUD authentic vibe."
+  },
+  "component_hierarchy": [
+    {
+      "name": "NavigationHUD",
+      "path": "frontend/src/components/NavigationHUD.tsx",
+      "description": "Top telemetry bar showing NASA insignia, active astronaut ID, points score, explored planets counter, sound toggle, and tab switches: [Builder, Launch Sim, Fleet Hangar, Upgrades, Dossier]."
+    },
+    {
+      "name": "AstronautAuthModal",
+      "path": "frontend/src/components/AstronautAuthModal.tsx",
+      "description": "Astronaut credentials enrollment with Callsign, Agency ID (NASA/JSC-XXXX), Specialization (Flight Commander, Propulsion Specialist, Orbital Navigator, Systems Engineer), and Security PIN."
+    },
+    {
+      "name": "RocketBuilderCanvas",
+      "path": "frontend/src/components/RocketBuilderCanvas.tsx",
+      "description": "Proteus-style interactive blueprint builder with snap-to-stack slots: Payload Capsule -> Upper Stage -> Interstage -> Lower Fuselage/Fuel Tanks -> Rocket Engines -> Boosters/Fins. Drag-and-drop or click-to-attach, live reordering, and live mass/TWR/Delta-V calculation."
+    },
+    {
+      "name": "PartsLibraryDrawer",
+      "path": "frontend/src/components/PartsLibraryDrawer.tsx",
+      "description": "Categorized NASA historical & modern part catalog: Command Pods (Apollo CSM, Orion, Dragon), Fuel Stages (S-IC, S-II, S-IVB, SLS Core), Engines (F-1, J-2, RS-25, Merlin 1D, Raptor), Boosters (SRBs, Shuttle Boosters), Aerodynamics (Titan Titanium Fins, Grid Fins)."
+    },
+    {
+      "name": "CompatibilityGuidePanel",
+      "path": "frontend/src/components/CompatibilityGuidePanel.tsx",
+      "description": "NASA Flight Surgeon & Engineering Guide: detects incompatible part pairings (e.g. TWR < 1.1 = rocket won't lift, payload too heavy, engine mount diameter mismatch) and gives 1-click 'Select Alternative Part' recommendations."
+    },
+    {
+      "name": "MissionFlightSimulator",
+      "path": "frontend/src/components/MissionFlightSimulator.tsx",
+      "description": "Dynamic launch and transit simulation to Moon, Mars, Jupiter, Saturn, or Europa. Features stage staging animations, atmospheric exit, orbital insertion, live countdown obstacles with critical decision choices, and % outcome calculator (100% Success, Partial Success, Mission Abort)."
+    },
+    {
+      "name": "ObstacleCrisisCard",
+      "path": "frontend/src/components/ObstacleCrisisCard.tsx",
+      "description": "Time-sensitive incident card (e.g., 'Excessive Fuel Consumption detected during burn', 'Solar Flare Radiation Spike', 'Micrometeoroid Hull Puncture') presenting 2-3 engineering countermeasures with countdown timer."
+    },
+    {
+      "name": "FleetHangarGallery",
+      "path": "frontend/src/components/FleetHangarGallery.tsx",
+      "description": "Curated museum and active flight pad for real NASA rockets (Saturn V, Space Shuttle, SLS Artemis, Atlas V, Titan IV, Delta IV Heavy, Falcon 9/Heavy) with full specs and instant 'Fly This Rocket' launch trigger."
+    },
+    {
+      "name": "UpgradesWorkshop",
+      "path": "frontend/src/components/UpgradesWorkshop.tsx",
+      "description": "Spend flight exploration points on upgrades: Engine Specific Impulse (+Isp), Aerodynamic Heat Shielding, Deep-Space Navigation AI, Cryogenic Fuel Insulation."
+    },
+    {
+      "name": "PlanetSelectorModal",
+      "path": "frontend/src/components/PlanetSelectorModal.tsx",
+      "description": "Interactive celestial body catalog with NASA planetary data (gravity, distance, atmosphere, required delta-v, hazards) and curated real NASA imagery."
+    }
+  ],
+  "image_urls": {
+    "shuttle_launch_hero": {
+      "url": "https://images.unsplash.com/photo-1614728263952-84ea256f9679?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwzfHxyb2NrZXQlMjBsYXVuY2glMjBzcGFjZXxlbnwwfHx8fDE3OTQ2NDk1ODN8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Space Shuttle Challenger launching from Kennedy Space Center with plume and tower",
+      "category": "hero_background"
+    },
+    "mars_planet_view": {
+      "url": "https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzR8MHwxfHNlYXJjaHwyfHxwbGFuZXQlMjBtYXJzJTIwc3BhY2UlMjBuYXNhfGVufDB8fHx8MTc5NDY0OTU4M3ww&ixlib=rb-4.1.0&q=85",
+      "description": "High-resolution real view of Mars on black starry background",
+      "category": "destinations"
+    },
+    "saturn_v_hangar": {
+      "url": "https://images.unsplash.com/photo-1515272751348-25380c6c1f9c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODF8MHwxfHNlYXJjaHwzfHxzcGFjZSUyMHNodXR0bGUlMjBzYXR1cm4lMjB2JTIwcm9ja2V0fGVufDB8fHx8MTc5NDY0OTU5MHww&ixlib=rb-4.1.0&q=85",
+      "description": "Rocket engines and multi-stage booster inside NASA Vehicle Assembly Building",
+      "category": "hangar"
+    },
+    "space_rocket_liftoff": {
+      "url": "https://images.unsplash.com/photo-1517976487492-5750f3195933?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwyfHxyb2NrZXQlMjBsYXVuY2glMjBzcGFjZXxlbnwwfHx8fDE3OTQ2NDk1ODN8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Orbital rocket ascending during daytime with massive thrust column",
+      "category": "launch_simulation"
+    },
+    "deep_space_mars_atmosphere": {
+      "url": "https://images.unsplash.com/photo-1654649451086-dd75d8170a27?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzR8MHwxfHNlYXJjaHwzfHxwbGFuZXQlMjBtYXJzJTIwc3BhY2UlMjBuYXNhfGVufDB8fHx8MTc5NDY0OTU4M3ww&ixlib=rb-4.1.0&q=85",
+      "description": "Atmospheric rim glow of Martian horizon in deep space",
+      "category": "planetary_exploration"
+    },
+    "rocket_thrust_tail": {
+      "url": "https://images.unsplash.com/photo-1519241678948-28f18681ce14?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODF8MHwxfHNlYXJjaHw0fHxzcGFjZSUyMHNodXR0bGUlMjBzYXR1cm4lMjB2JTIwcm9ja2V0fGVufDB8fHx8MTc5NDY0OTU5MHww&ixlib=rb-4.1.0&q=85",
+      "description": "Detailed vertical rocket stage structure with external piping and booster clamps",
+      "category": "schematics"
+    }
+  },
+  "motion_and_microinteractions": {
+    "hud_telemetry_tickers": "Smooth counting animation using motion/react or setInterval for Delta-V, altitude, speed, and point gains.",
+    "stage_assembly_snap": "Spring physics on dropped or clicked rocket stages snapping into vertical alignment with sound trigger/visual pulse.",
+    "launch_shake_effect": "CSS keyframe shake on the launch viewport during T-0 to T+10s liftoff burn.",
+    "crisis_countdown_bar": "Urgent pulsing amber/red progress bar indicating remaining seconds (e.g. 10s) before emergency choice resolves.",
+    "hover_state_rule": "Every interactive HUD card lifts with `hover:-translate-y-0.5 hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(0,229,255,0.2)] transition-all duration-200`."
+  },
+  "accessibility_and_testing": {
+    "wcag_aa_contrast": "All text and telemetry values meet minimum 4.5:1 contrast against dark background. Use bright cyan (#38BDF8), white (#F8FAFC), amber (#FBBF24), or emerald (#34D399).",
+    "reduced_motion": "Respect `prefers-reduced-motion` by disabling launch screen shake and rapid starfield animations.",
+    "test_attributes": "All buttons, tabs, drag items, inputs, crisis option buttons, and launch triggers MUST have `data-testid` attributes (e.g., `data-testid=\"astronaut-login-submit\"`, `data-testid=\"launch-mission-btn\"`, `data-testid=\"crisis-choice-0\"`, `data-testid=\"part-item-f1-engine\"`, `data-testid=\"hangar-fly-saturn-v\"`)."
+  },
+  "instructions_to_main_agent": [
+    "1. Build the complete NASA Rocket Command & Simulation platform with both Page 1 (Custom Rocket Builder + Launch Simulation with Obstacle Crisis Decisions) and Page 2 (NASA Historic Fleet Hangar + Points System + Upgrades Shop + Astronaut Profile).",
+    "2. Seed rich, authentic NASA data for parts (Apollo, Shuttle, Artemis SLS, Titan, Saturn V, Atlas V), realistic mass/thrust/Isp equations for Thrust-to-Weight Ratio (TWR) and Delta-V (Tsiolkovsky rocket equation calculation).",
+    "3. Implement the Beginner Help Guide module that detects incompatible setups (e.g., insufficient thrust, missing payload, unbalanced stages) with 1-click alternative part replacement.",
+    "4. Create multiple destination worlds (Moon, Mars, Jupiter, Europa, Titan, Saturn) with real NASA distances, gravity, and atmospheres.",
+    "5. Implement at least 6 unique obstacle scenarios with 2-3 engineering choices each (e.g., fuel leak, solar radiation flare, guidance gyro drift, staging separation jam, thermal tile loss, atmospheric drag peak).",
+    "6. Award points in the 3 specified ways: Mission Completion, Overcoming Obstacles, Exploring Planets. Points immediately unlock upgrades in the Upgrades Shop.",
+    "7. Include sound effects toggle (synthesized Web Audio API retro telemetry beeps, launch rumble, alert klaxons) for maximum immersion.",
+    "8. Keep all data persistent in localStorage + backend database so astronauts keep their earned points, unlocked upgrades, and custom rocket blueprints across refreshes."
+  ]
+}

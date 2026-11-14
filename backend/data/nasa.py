@@ -1,0 +1,269 @@
+"""Curated NASA reference data (approximate public NASA figures: masses in metric tonnes,
+thrust in kN, Isp in seconds, diameters in metres). Sources: NASA Saturn V / SLS / Shuttle
+press kits, NSSDCA Planetary Fact Sheet, NASA mission histories."""
+
+CATEGORIES = [
+    {"id": "crew", "label": "Crew Capsules & Payloads"},
+    {"id": "upper", "label": "Upper Stages"},
+    {"id": "interstage", "label": "Interstages & Adapters"},
+    {"id": "lower", "label": "Lower Fuselage / Core Stages"},
+    {"id": "engine", "label": "Engines & Thrusters"},
+    {"id": "booster", "label": "Boosters"},
+    {"id": "aero", "label": "Fins & Fairings"},
+]
+
+# propellant: tanks/engines must match. thrust_sl_kn 0 = vacuum-only engine.
+_P = [
+    # crew / payload
+    ("mercury", "Mercury Capsule", "crew", "Project Mercury (1961-63)", 1.4, 1.4, 1.9, None, 0, 0, 0, 0, "One-person capsule that carried the first American astronauts."),
+    ("gemini", "Gemini Spacecraft", "crew", "Project Gemini (1965-66)", 3.8, 3.8, 3.0, None, 0, 0, 0, 0, "Two-person spacecraft that proved rendezvous and EVA."),
+    ("apollo_csm", "Apollo Command/Service Module", "crew", "Apollo (1968-72)", 28.8, 28.8, 3.9, None, 0, 0, 0, 0, "Three-crew CSM with the AJ10 Service Propulsion System."),
+    ("apollo_lm", "Apollo Lunar Module", "crew", "Apollo (1969-72)", 15.1, 15.1, 4.3, None, 0, 0, 0, 0, "Two-stage lander that touched down on the Moon six times."),
+    ("orion", "Orion Crew Module + ESM", "crew", "Artemis (2022-)", 26.5, 26.5, 5.0, None, 0, 0, 0, 0, "Artemis crew vehicle with the European Service Module."),
+    ("crew_dragon", "Crew Dragon (Commercial Crew)", "crew", "NASA Commercial Crew (2020-)", 12.5, 12.5, 4.0, None, 0, 0, 0, 0, "NASA Commercial Crew capsule flying astronauts to the ISS."),
+    ("shuttle_orbiter", "Space Shuttle Orbiter", "crew", "STS (1981-2011)", 110.0, 110.0, 7.8, None, 0, 0, 0, 0, "Reusable winged orbiter, 135 missions flown."),
+    ("perseverance", "Perseverance Rover + Cruise Stage", "crew", "Mars 2020", 4.0, 4.0, 4.5, None, 0, 0, 0, 0, "Mars 2020 rover, cruise stage and aeroshell."),
+    ("parker_probe", "Parker Solar Probe + Star 48BV", "crew", "Parker Solar Probe (2018)", 2.7, 2.7, 3.0, None, 0, 0, 0, 0, "Fastest human-made object, with its kick stage."),
+    ("apollo_les", "Apollo Launch Escape System", "crew", "Apollo (1968-72)", 4.2, 4.2, 1.0, None, 0, 0, 0, 0, "Solid-rocket tower that pulls the crew to safety in an abort."),
+    # upper stages
+    ("s_ivb", "S-IVB Third Stage", "upper", "Saturn IB / Saturn V", 119.9, 11.7, 6.6, "LH2/LOX", 0, 0, 0, 0, "Restartable stage that performed trans-lunar injection."),
+    ("s_ii", "S-II Second Stage", "upper", "Saturn V", 480.6, 29.0, 10.1, "LH2/LOX", 0, 0, 0, 0, "Largest liquid-hydrogen stage of its era."),
+    ("centaur", "Centaur Upper Stage", "upper", "Atlas / Titan (1962-)", 23.1, 2.2, 3.05, "LH2/LOX", 0, 0, 0, 0, "First US hydrogen upper stage; launched Surveyor, Voyager, Perseverance."),
+    ("icps", "ICPS (Interim Cryogenic Propulsion Stage)", "upper", "SLS Block 1", 32.1, 3.5, 5.0, "LH2/LOX", 0, 0, 0, 0, "Sends Orion out of Earth orbit toward the Moon."),
+    ("dcss", "Delta Cryogenic Second Stage", "upper", "Delta IV", 30.7, 3.5, 5.1, "LH2/LOX", 0, 0, 0, 0, "Delta IV upper stage, sent Parker Solar Probe toward the Sun."),
+    ("titan_ii_s2", "Titan II Second Stage", "upper", "Titan II GLV", 28.9, 2.3, 3.05, "AZ50/N2O4", 0, 0, 0, 0, "Hypergolic second stage of the Gemini launcher."),
+    # interstages
+    ("saturn_interstage", "Saturn V Interstage", "interstage", "Saturn V", 5.2, 5.2, 10.1, None, 0, 0, 0, 0, "Ring that links stages and is jettisoned at separation."),
+    ("sls_lvsa", "SLS Launch Vehicle Stage Adapter", "interstage", "SLS Block 1", 4.5, 4.5, 8.4, None, 0, 0, 0, 0, "Tapers the 8.4 m core down to the 5 m ICPS."),
+    ("orion_adapter", "Orion Stage Adapter", "interstage", "SLS Block 1", 0.9, 0.9, 5.0, None, 0, 0, 0, 0, "Connects Orion to the ICPS; carries CubeSats."),
+    # lower fuselage / core
+    ("s_ic", "S-IC First Stage", "lower", "Saturn V", 2290.0, 89.0, 10.1, "RP-1/LOX", 0, 0, 0, 0, "Saturn V first stage, burned for 168 seconds."),
+    ("sls_core", "SLS Core Stage", "lower", "SLS Block 1", 1094.0, 71.0, 8.4, "LH2/LOX", 0, 0, 0, 0, "64.6 m tall core stage with four RS-25s."),
+    ("shuttle_et", "Space Shuttle External Tank", "lower", "STS (1981-2011)", 760.0, 26.5, 8.4, "LH2/LOX", 0, 0, 0, 0, "Feeds the orbiter's three RS-25s and is not reused."),
+    ("atlas_v_cbb", "Atlas V Common Core Booster", "lower", "Atlas V (2002-)", 305.0, 16.0, 3.81, "RP-1/LOX", 0, 0, 0, 0, "Core of Atlas V, which launched New Horizons, Curiosity and Perseverance."),
+    ("delta_iv_cbc", "Delta IV Common Booster Core", "lower", "Delta IV (2002-24)", 226.0, 19.0, 5.1, "LH2/LOX", 0, 0, 0, 0, "Hydrogen core used by Orion EFT-1 and Parker Solar Probe."),
+    ("titan_ii_s1", "Titan II First Stage", "lower", "Titan II GLV", 117.0, 4.7, 3.05, "AZ50/N2O4", 0, 0, 0, 0, "Hypergolic first stage of the Gemini launcher."),
+    ("redstone_tank", "Redstone Tank Assembly", "lower", "Mercury-Redstone (1960-61)", 28.0, 3.6, 1.78, "ETHANOL/LOX", 0, 0, 0, 0, "Launched Alan Shepard on America's first human spaceflight."),
+    # engines: thrust_sl, thrust_vac, isp_sl, isp_vac
+    ("f1", "Rocketdyne F-1", "engine", "Saturn V S-IC", 8.4, 8.4, 3.7, "RP-1/LOX", 6770, 7770, 263, 304, "Most powerful single-chamber liquid engine ever flown."),
+    ("j2", "Rocketdyne J-2", "engine", "Saturn S-II / S-IVB", 1.8, 1.8, 2.0, "LH2/LOX", 486, 1033, 200, 421, "Restartable hydrogen engine of the Saturn upper stages."),
+    ("rs25", "Aerojet RS-25", "engine", "Space Shuttle / SLS", 3.5, 3.5, 2.4, "LH2/LOX", 1860, 2279, 366, 452, "Space Shuttle Main Engine, reflown for SLS."),
+    ("rl10", "Aerojet RL10", "engine", "Centaur / ICPS / DCSS", 0.3, 0.3, 1.2, "LH2/LOX", 0, 110, 0, 465, "Vacuum-optimised hydrogen engine. Cannot lift off at sea level."),
+    ("rd180", "RD-180", "engine", "Atlas V", 5.4, 5.4, 3.0, "RP-1/LOX", 3830, 4152, 311, 338, "Dual-chamber engine powering Atlas V NASA science launches."),
+    ("rs68a", "Aerojet RS-68A", "engine", "Delta IV", 6.7, 6.7, 2.4, "LH2/LOX", 3137, 3560, 362, 414, "Largest hydrogen-fuelled engine at the time it flew."),
+    ("lr87", "Aerojet LR87", "engine", "Titan II", 1.8, 1.8, 3.0, "AZ50/N2O4", 1900, 2200, 259, 296, "Twin-chamber hypergolic engine that launched Gemini."),
+    ("lr91", "Aerojet LR91", "engine", "Titan II stage 2", 0.6, 0.6, 1.5, "AZ50/N2O4", 0, 445, 0, 316, "Vacuum hypergolic engine of the Titan II second stage."),
+    ("a7", "Rocketdyne A-7", "engine", "Redstone", 0.6, 0.6, 1.7, "ETHANOL/LOX", 350, 400, 215, 235, "Engine of the Mercury-Redstone."),
+    # boosters (self-contained)
+    ("shuttle_srb", "Shuttle Solid Rocket Booster", "booster", "STS (1981-2011)", 590.0, 91.0, 3.7, "SOLID", 12500, 13800, 242, 268, "Four-segment recoverable SRB, attached in pairs."),
+    ("sls_srb", "SLS 5-Segment Solid Booster", "booster", "SLS Block 1", 726.0, 100.0, 3.7, "SOLID", 14600, 16000, 237, 269, "Most powerful solid boosters ever flown."),
+    ("gem63", "GEM 63 Strap-on", "booster", "Atlas V", 49.3, 5.0, 1.6, "SOLID", 1660, 1790, 245, 279, "Northrop Grumman strap-on for Atlas V."),
+    ("delta_cbc_booster", "Delta IV Heavy Side Booster", "booster", "Delta IV Heavy", 232.7, 25.7, 5.1, "LH2/LOX", 3137, 3560, 362, 414, "Strap-on Common Booster Core with its own RS-68A."),
+    # aero
+    ("saturn_fins", "Saturn V Fin Set (x4)", "aero", "Saturn V", 1.0, 1.0, 10.1, None, 0, 0, 0, 0, "Four fins that stabilise the S-IC during ascent."),
+    ("redstone_fins", "Redstone Fin Set", "aero", "Mercury-Redstone", 0.3, 0.3, 1.78, None, 0, 0, 0, 0, "Fins with graphite vanes for steering."),
+    ("fairing_5m", "5 m Payload Fairing", "aero", "Atlas V / Delta IV", 4.4, 4.4, 5.4, None, 0, 0, 0, 0, "Composite nose fairing that protects payloads through the atmosphere."),
+]
+
+PARTS = [
+    {
+        "id": p[0], "name": p[1], "category": p[2], "program": p[3], "mass_t": p[4], "dry_t": p[5],
+        "diameter_m": p[6], "propellant": p[7], "thrust_sl_kn": p[8], "thrust_vac_kn": p[9],
+        "isp_sl_s": p[10], "isp_vac_s": p[11], "description": p[12],
+    }
+    for p in _P
+]
+PART_BY_ID = {p["id"]: p for p in PARTS}
+
+
+def _s(*items):
+    return [{"part_id": i, "qty": q} for i, q in items]
+
+
+ROCKETS = [
+    {"id": "saturn_v", "name": "Saturn V", "era": "1967-1973", "flights": 13, "height_m": 110.6,
+     "image_query": "Saturn V launch", "summary": "Moon rocket of the Apollo program: 13 flights and no payload lost.",
+     "stack": _s(("apollo_les", 1), ("apollo_csm", 1), ("apollo_lm", 1), ("s_ivb", 1), ("j2", 1), ("saturn_interstage", 1),
+                 ("s_ii", 1), ("j2", 5), ("saturn_interstage", 1), ("s_ic", 1), ("f1", 5), ("saturn_fins", 1))},
+    {"id": "sls_block1", "name": "SLS Block 1", "era": "2022-", "flights": 1, "height_m": 98.0,
+     "image_query": "Artemis I SLS launch", "summary": "Space Launch System, which flew Orion around the Moon on Artemis I.",
+     "stack": _s(("orion", 1), ("orion_adapter", 1), ("icps", 1), ("rl10", 1), ("sls_lvsa", 1), ("sls_core", 1), ("rs25", 4), ("sls_srb", 2))},
+    {"id": "space_shuttle", "name": "Space Shuttle", "era": "1981-2011", "flights": 135, "height_m": 56.1,
+     "image_query": "STS-135 launch Atlantis", "summary": "Reusable orbiter system that built the ISS and launched Hubble.",
+     "stack": _s(("shuttle_orbiter", 1), ("shuttle_et", 1), ("rs25", 3), ("shuttle_srb", 2))},
+    {"id": "atlas_v_541", "name": "Atlas V 541", "era": "2011-", "flights": 8, "height_m": 62.2,
+     "image_query": "Atlas V Perseverance launch", "summary": "Launched the Curiosity and Perseverance rovers to Mars.",
+     "stack": _s(("perseverance", 1), ("fairing_5m", 1), ("centaur", 1), ("rl10", 1), ("atlas_v_cbb", 1), ("rd180", 1), ("gem63", 4))},
+    {"id": "delta_iv_heavy", "name": "Delta IV Heavy", "era": "2004-2024", "flights": 16, "height_m": 72.0,
+     "image_query": "Delta IV Heavy launch", "summary": "Three-core heavy lifter that launched Parker Solar Probe and Orion EFT-1.",
+     "stack": _s(("parker_probe", 1), ("fairing_5m", 1), ("dcss", 1), ("rl10", 1), ("delta_iv_cbc", 1), ("rs68a", 1), ("delta_cbc_booster", 2))},
+    {"id": "titan_ii_glv", "name": "Titan II GLV", "era": "1964-1966", "flights": 12, "height_m": 33.2,
+     "image_query": "Titan II Gemini launch", "summary": "Hypergolic launcher of the Gemini program.",
+     "stack": _s(("gemini", 1), ("titan_ii_s2", 1), ("lr91", 1), ("titan_ii_s1", 1), ("lr87", 1))},
+    {"id": "mercury_redstone", "name": "Mercury-Redstone", "era": "1960-1961", "flights": 6, "height_m": 25.4,
+     "image_query": "Mercury Redstone launch", "summary": "Launched Alan Shepard on the first US human spaceflight. Suborbital only.",
+     "stack": _s(("mercury", 1), ("redstone_tank", 1), ("a7", 1), ("redstone_fins", 1))},
+]
+ROCKET_BY_ID = {r["id"]: r for r in ROCKETS}
+
+# NSSDCA Planetary Fact Sheet values. required_dv_ms is the ideal delta-v from the pad (sim model).
+PLANETS = [
+    {"id": "earth_orbit", "name": "Earth Orbit (ISS)", "distance_mkm": 0.0004, "gravity_ms2": 8.7, "mean_temp_c": -157,
+     "day_hours": 1.5, "moons": 0, "atmosphere": "None (408 km altitude)", "required_dv_ms": 8500, "reward": 120, "explore_bonus": 80,
+     "obstacle_count": 3, "image_query": "International Space Station", "fact": "The ISS orbits Earth every 92 minutes at about 28,000 km/h."},
+    {"id": "moon", "name": "Moon", "distance_mkm": 0.384, "gravity_ms2": 1.62, "mean_temp_c": -20, "day_hours": 708.7, "moons": 0,
+     "atmosphere": "Exosphere (negligible)", "required_dv_ms": 12000, "reward": 250, "explore_bonus": 150, "obstacle_count": 3,
+     "image_query": "Moon surface Apollo", "fact": "Twelve astronauts walked on the Moon between 1969 and 1972."},
+    {"id": "venus", "name": "Venus", "distance_mkm": 41.4, "gravity_ms2": 8.87, "mean_temp_c": 464, "day_hours": 2802.0, "moons": 0,
+     "atmosphere": "96.5% CO2, 92 bar", "required_dv_ms": 12500, "reward": 380, "explore_bonus": 220, "obstacle_count": 4,
+     "image_query": "Venus planet Magellan", "fact": "Venus is the hottest planet; its surface pressure is 92 times Earth's."},
+    {"id": "mars", "name": "Mars", "distance_mkm": 78.3, "gravity_ms2": 3.71, "mean_temp_c": -65, "day_hours": 24.7, "moons": 2,
+     "atmosphere": "95% CO2, 0.006 bar", "required_dv_ms": 12800, "reward": 420, "explore_bonus": 250, "obstacle_count": 4,
+     "image_query": "Mars planet", "fact": "Olympus Mons is nearly three times taller than Mount Everest."},
+    {"id": "mercury", "name": "Mercury", "distance_mkm": 91.7, "gravity_ms2": 3.7, "mean_temp_c": 167, "day_hours": 4222.6, "moons": 0,
+     "atmosphere": "Exosphere", "required_dv_ms": 15000, "reward": 520, "explore_bonus": 300, "obstacle_count": 5,
+     "image_query": "Mercury planet MESSENGER", "fact": "MESSENGER needed six planetary flybys to enter Mercury orbit."},
+    {"id": "jupiter", "name": "Jupiter", "distance_mkm": 628.7, "gravity_ms2": 24.79, "mean_temp_c": -110, "day_hours": 9.9, "moons": 95,
+     "atmosphere": "90% H2, 10% He", "required_dv_ms": 15000, "reward": 650, "explore_bonus": 380, "obstacle_count": 5,
+     "image_query": "Jupiter Juno", "fact": "Juno shields its electronics inside a titanium radiation vault."},
+    {"id": "saturn", "name": "Saturn", "distance_mkm": 1275.0, "gravity_ms2": 10.44, "mean_temp_c": -140, "day_hours": 10.7, "moons": 146,
+     "atmosphere": "96% H2, 3% He", "required_dv_ms": 16000, "reward": 780, "explore_bonus": 450, "obstacle_count": 6,
+     "image_query": "Saturn Cassini", "fact": "Cassini made 22 dives between Saturn and its rings."},
+    {"id": "uranus", "name": "Uranus", "distance_mkm": 2723.0, "gravity_ms2": 8.87, "mean_temp_c": -195, "day_hours": 17.2, "moons": 28,
+     "atmosphere": "83% H2, 15% He, 2% CH4", "required_dv_ms": 16800, "reward": 900, "explore_bonus": 520, "obstacle_count": 6,
+     "image_query": "Uranus Voyager 2", "fact": "Voyager 2 is the only spacecraft to have visited Uranus (1986)."},
+    {"id": "neptune", "name": "Neptune", "distance_mkm": 4351.0, "gravity_ms2": 11.15, "mean_temp_c": -200, "day_hours": 16.1, "moons": 16,
+     "atmosphere": "80% H2, 19% He, CH4", "required_dv_ms": 17200, "reward": 1000, "explore_bonus": 600, "obstacle_count": 6,
+     "image_query": "Neptune Voyager 2", "fact": "Neptune's winds reach about 2,000 km/h, the fastest in the Solar System."},
+]
+PLANET_BY_ID = {p["id"]: p for p in PLANETS}
+
+UPGRADES = [
+    {"id": "engine_isp", "name": "Engine Specific Impulse", "description": "+3% Isp on every engine per level", "base_cost": 150, "max_level": 5},
+    {"id": "structural", "name": "Lightweight Structures", "description": "-3% dry mass per level (aluminium-lithium alloys)", "base_cost": 140, "max_level": 3},
+    {"id": "fuel_insulation", "name": "Cryogenic Fuel Insulation", "description": "Cuts fuel losses during crises by 15% per level", "base_cost": 120, "max_level": 3},
+    {"id": "heat_shield", "name": "Heat Shielding (PICA-X)", "description": "Cuts hull damage during crises by 15% per level", "base_cost": 120, "max_level": 3},
+    {"id": "nav_ai", "name": "Deep-Space Navigation AI", "description": "+3 s decision time and +2% mission score per level", "base_cost": 180, "max_level": 3},
+]
+UPGRADE_BY_ID = {u["id"]: u for u in UPGRADES}
+
+ATMOSPHERIC = ["venus", "mars", "jupiter", "saturn", "uranus", "neptune"]
+
+
+def _o(label, detail, quality, outcome, fuel=0, hull=0, power=0):
+    return {"label": label, "detail": detail, "quality": quality, "outcome": outcome,
+            "effects": {"fuel": fuel, "hull": hull, "power": power}}
+
+
+# phase: launch | transit | arrival. planets: [] = anywhere.
+OBSTACLES = [
+    {"id": "max_q", "phase": "launch", "planets": [], "title": "Max-Q Aerodynamic Stress Spike",
+     "description": "Dynamic pressure is 12% above limits at 11 km altitude. The airframe is flexing.",
+     "nasa_ref": "Every Shuttle and SLS ascent throttles down through Max-Q.",
+     "options": [_o("Throttle down through Max-Q", "Drop thrust to 67% for 30 s, as the Shuttle did", 1.0, "Loads back in limits. Textbook ascent.", fuel=-3),
+                 _o("Pitch over early", "Shallower ascent to bleed off pressure", 0.5, "Stress relieved but gravity losses rose.", fuel=-8),
+                 _o("Hold full throttle", "Accept the stress to save time", 0.2, "Skin panels buckled. Hull compromised.", hull=-20)]},
+    {"id": "lightning", "phase": "launch", "planets": [], "title": "Lightning Strike at T+36 s",
+     "description": "Two lightning strikes. Fuel cells went offline and telemetry is garbled.",
+     "nasa_ref": "Apollo 12 (1969): John Aaron's 'SCE to AUX' call saved the mission.",
+     "options": [_o("Switch SCE to AUX", "Reset the Signal Conditioning Equipment to auxiliary power", 1.0, "Telemetry restored. Fuel cells back online.", power=-5),
+                 _o("Continue on batteries", "Ignore the telemetry loss and push to orbit", 0.4, "Reached orbit blind with batteries drained.", power=-25),
+                 _o("Fire Launch Escape System", "Abort and pull the crew away", 0.3, "Crew safe, but the vehicle is badly damaged.", hull=-25, fuel=-10)]},
+    {"id": "pogo", "phase": "launch", "planets": [], "title": "POGO Oscillation",
+     "description": "Violent 16 Hz vibration in the stage. The center engine thrust chamber is oscillating.",
+     "nasa_ref": "Apollo 13 (1970): severe S-II POGO stopped the center J-2 early.",
+     "options": [_o("Early center-engine cutoff", "Shut down the oscillating engine and burn the outboard ones longer", 1.0, "Vibration stopped. Outboard engines made up the difference.", fuel=-5),
+                 _o("Throttle all engines down", "Lower chamber pressure to damp the resonance", 0.6, "Oscillation damped at a performance cost.", fuel=-9),
+                 _o("Ride it out", "Hope it settles before cutoff", 0.1, "Structural fatigue cracks in the thrust structure.", hull=-25)]},
+    {"id": "staging_jam", "phase": "launch", "planets": [], "title": "Stage Separation Failure",
+     "description": "The spent stage did not separate. Dead weight is dragging the vehicle.",
+     "nasa_ref": "Gemini-Titan launch rules called for backup pyrotechnic firing.",
+     "options": [_o("Fire backup pyrotechnics", "Trigger the redundant frangible bolts", 1.0, "Clean separation on the backup circuit.", power=-5),
+                 _o("Burn with stage attached", "Ignite the upper stage regardless", 0.3, "Orbit reached with heavy propellant penalty.", fuel=-25),
+                 _o("Abort to ocean", "Terminate the ascent", 0.2, "Mission scrubbed. The vehicle splashed down in the ocean.", hull=-30)]},
+    {"id": "fuel_overburn", "phase": "transit", "planets": [], "title": "Excessive Fuel Consumption",
+     "description": "Propellant flow is running 18% above nominal during the transfer burn.",
+     "nasa_ref": "Apollo 11 LM landed with about 45 s of descent fuel left.",
+     "options": [_o("Reduce engine power", "Throttle to 85% and stretch the burn", 0.7, "Consumption stabilised, schedule slipped slightly.", fuel=-6),
+                 _o("Switch to fuel-saving mode", "Re-plan for a gravity-assist coast arc", 1.0, "Trajectory optimised. Fuel margin protected.", fuel=-3, power=-4),
+                 _o("Keep full throttle", "Stay on schedule at any cost", 0.2, "Reserves are now dangerously low.", fuel=-22)]},
+    {"id": "o2_tank", "phase": "transit", "planets": [], "title": "Oxygen Tank Rupture",
+     "description": "'Houston, we've had a problem.' O2 tank 2 exploded and service module power is failing.",
+     "nasa_ref": "Apollo 13 (1970): the crew used the LM as a lifeboat.",
+     "options": [_o("Use lander as lifeboat", "Power down the main module and move into the backup module", 1.0, "Crew stable on lifeboat consumables.", power=-25),
+                 _o("Direct-abort burn", "Burn immediately for the fastest return", 0.6, "Course reversed at a heavy fuel cost.", fuel=-18),
+                 _o("Try to repressurise the tank", "Cycle the cryo fans and heaters", 0.1, "Second tank failed. Hull breach.", hull=-25, power=-15)]},
+    {"id": "solar_flare", "phase": "transit", "planets": [], "title": "Solar Particle Event",
+     "description": "An X-class flare is sending a proton storm. Radiation will peak in 40 minutes.",
+     "nasa_ref": "NASA SRAG monitors space weather for every crewed mission.",
+     "options": [_o("Shelter and reorient", "Move the crew to the water-shielded storm shelter and point the engine block at the Sun", 1.0, "Dose kept under career limits.", power=-5),
+                 _o("Sprint burn", "Increase velocity to cut exposure time", 0.5, "Exposure reduced, fuel spent.", fuel=-12),
+                 _o("Continue normal ops", "The shielding should be enough", 0.1, "Electronics degraded by the radiation.", hull=-15, power=-15)]},
+    {"id": "micrometeoroid", "phase": "transit", "planets": [], "title": "Micrometeoroid Hull Puncture",
+     "description": "A 2 mm impactor holed the habitat. Cabin pressure is dropping 0.1 psi per minute.",
+     "nasa_ref": "The ISS has repeatedly patched leaks from small impacts.",
+     "options": [_o("Isolate and patch", "Close the hatch and apply a Kapton-epoxy patch", 1.0, "Leak sealed. Pressure stable.", power=-4),
+                 _o("EVA external repair", "Spacewalk to seal the outer skin", 0.6, "Repaired, at the cost of time and power.", power=-10, hull=-5),
+                 _o("Top up the atmosphere", "Bleed reserve O2 into the cabin and keep flying", 0.15, "Reserves drained and the leak grew.", hull=-25)]},
+    {"id": "gyro_drift", "phase": "transit", "planets": [], "title": "IMU Guidance Drift",
+     "description": "The inertial platform has drifted 0.9 degrees. The trajectory is diverging.",
+     "nasa_ref": "Apollo crews realigned the IMU with P52 star sightings.",
+     "options": [_o("Star-sighting realignment", "Run P52 with the sextant on navigation stars", 1.0, "Platform aligned to 0.01 degrees.", power=-3),
+                 _o("Ground DSN state vector", "Request a tracking uplink from the Deep Space Network", 0.8, "Updated vector received after a delay.", power=-6),
+                 _o("Correct by estimate", "Manual burn based on the pilot's estimate", 0.3, "Overcorrected. Extra burns needed.", fuel=-12)]},
+    {"id": "stuck_thruster", "phase": "transit", "planets": [], "title": "Stuck-Open Thruster",
+     "description": "Thruster 8 is firing continuously. The spacecraft is spinning at one revolution per second.",
+     "nasa_ref": "Gemini 8 (1966): Neil Armstrong regained control with the re-entry thrusters.",
+     "options": [_o("Disable OAMS, use RCS", "Shut down the primary system and stabilise on the re-entry thrusters", 1.0, "Spin stopped. Crew conscious and stable.", fuel=-10),
+                 _o("Cycle breakers one by one", "Find and isolate the bad thruster", 0.6, "Found it, but propellant was lost along the way.", fuel=-16, power=-5),
+                 _o("Counter-thrust manually", "Fight the spin with hand controller", 0.15, "Spin worsened and propellant was wasted.", fuel=-25)]},
+    {"id": "comms_blackout", "phase": "transit", "planets": [], "title": "Deep Space Network Link Loss",
+     "description": "The high-gain antenna lost lock. No uplink or downlink for 6 minutes.",
+     "nasa_ref": "Voyager 2 lost contact in 2023 after a mis-pointed antenna command.",
+     "options": [_o("Autonomous safe mode", "Spacecraft points its antenna back to Earth by itself", 1.0, "Link reacquired via Canberra DSS-43.", power=-8),
+                 _o("Switch to low-gain antenna", "Low data rate, but a reliable link", 0.8, "Basic commanding restored.", power=-4),
+                 _o("Continue blind", "Execute the stored sequence", 0.3, "Missed a correction window.", fuel=-12)]},
+    {"id": "heat_entry", "phase": "arrival", "planets": ATMOSPHERIC, "title": "Atmospheric Entry Heat Spike",
+     "description": "Peak heating is 30% above prediction. Heat shield ablation is accelerating.",
+     "nasa_ref": "Mars 2020 used a PICA heat shield and guided lift-up entry.",
+     "options": [_o("Shallow angle + lift-up roll", "Bank to extend the entry and spread the heat", 1.0, "Heat load managed. Nominal entry.", hull=-5),
+                 _o("Hold the standard corridor", "Trust the margins", 0.6, "Shield ablated close to its limit.", hull=-15),
+                 _o("Deploy parachute early", "Slow down sooner", 0.2, "Parachute shredded at supersonic speed.", hull=-28)]},
+    {"id": "dust_storm", "phase": "arrival", "planets": ["mars"], "title": "Global Dust Storm",
+     "description": "A planet-encircling dust storm is blocking sunlight and visibility at the landing site.",
+     "nasa_ref": "In 2018 a global dust storm ended the Opportunity rover's mission.",
+     "options": [_o("Wait in orbit", "Loiter until the dust settles", 1.0, "Storm cleared after 9 sols. Safe landing.", fuel=-8, power=-8),
+                 _o("Divert to an alternate site", "Land in clearer northern plains", 0.7, "Landed, but away from the science targets.", fuel=-10),
+                 _o("Land now", "Use radar only", 0.25, "Hard landing in the dust.", hull=-22)]},
+    {"id": "radiation_belt", "phase": "arrival", "planets": ["jupiter", "saturn"], "title": "Intense Radiation Belts",
+     "description": "Electron flux is 10x expected. Avionics are taking single-event upsets.",
+     "nasa_ref": "Juno protects its avionics in a 1 cm thick titanium vault.",
+     "options": [_o("Power down to the vault core", "Run only vault-shielded avionics", 1.0, "Electronics protected.", power=-10),
+                 _o("Raise orbit periapsis", "Avoid the worst of the belts", 0.7, "Exposure reduced at a fuel cost.", fuel=-12),
+                 _o("Continue the science pass", "Gather maximum data", 0.1, "Camera and computer damaged.", hull=-28)]},
+    {"id": "alarm_1202", "phase": "arrival", "planets": ["moon"], "title": "1202 Program Alarm",
+     "description": "The guidance computer is overloaded during powered descent. 'Program alarm 1202!'",
+     "nasa_ref": "Apollo 11 (1969): Steve Bales called 'We're GO on that alarm.'",
+     "options": [_o("GO, continue descent", "The computer is shedding low-priority tasks", 1.0, "'The Eagle has landed.'"),
+                 _o("Reboot the computer", "Restart it mid-descent", 0.35, "Guidance lost for 20 s. Hard landing.", power=-15, hull=-8),
+                 _o("Abort to orbit", "Fire the ascent stage", 0.25, "Crew safe but the landing was lost.", fuel=-22)]},
+    {"id": "docking", "phase": "arrival", "planets": ["earth_orbit"], "title": "Docking Probe Won't Capture",
+     "description": "The capture latches failed on five attempts.",
+     "nasa_ref": "Apollo 14 (1971): the sixth attempt with firmer thrust succeeded.",
+     "options": [_o("Retry with firmer approach", "Hold thrust through contact", 1.0, "Hard dock achieved. Latches engaged.", fuel=-5),
+                 _o("Hold and diagnose", "Inspect the probe camera feed", 0.7, "Debris cleared. Docked on the next pass.", power=-6),
+                 _o("Ram at speed", "Force the capture", 0.15, "Docking ring damaged.", hull=-22)]},
+    {"id": "ring_crossing", "phase": "arrival", "planets": ["saturn", "uranus"], "title": "Ring-Plane Crossing",
+     "description": "Debris particles are hitting the spacecraft at 34 km/s while crossing the ring plane.",
+     "nasa_ref": "Cassini used its high-gain antenna as a shield on ring dives.",
+     "options": [_o("Antenna as shield", "Point the 4 m dish forward", 1.0, "Particles absorbed by the dish.", power=-5),
+                 _o("Fly through a gap", "Thread the gap between rings", 0.6, "Some impacts on the edge of the gap.", hull=-10),
+                 _o("Straight crossing", "Fastest route", 0.2, "Multiple impacts on the instruments.", hull=-26)]},
+    {"id": "orbit_insertion", "phase": "arrival", "planets": ["venus", "mercury", "neptune", "uranus", "jupiter", "moon", "mars"], "title": "Orbit Insertion Burn Underperformance",
+     "description": "The main engine is producing 7% less thrust. The capture burn will fall short.",
+     "nasa_ref": "Juno skipped a burn in 2016 after sticky helium check valves.",
+     "options": [_o("Switch to backup engine branch", "Use the redundant valve train", 1.0, "Capture burn nominal.", fuel=-7, power=-4),
+                 _o("Extend the burn", "Burn longer to make up the difference", 0.75, "Captured into a higher orbit.", fuel=-15),
+                 _o("Skip the burn and flyby", "Accept a flyby instead of orbit", 0.3, "Only flyby science collected.", fuel=-3)]},
+]
+OBSTACLE_BY_ID = {o["id"]: o for o in OBSTACLES}
