@@ -32,16 +32,17 @@ export interface Blueprint { label: string; stack: StackItem[] }
 export interface Astronaut {
   id: string; full_name: string; callsign: string; agency_id: string; specialization: string; nationality: string;
   points: number; total_points_earned: number; explored: string[]; upgrades: Record<string, number>;
-  blueprint: Blueprint; missions_flown: number; created_at: string;
+  blueprint: Blueprint; missions_flown: number; achievements: string[]; created_at: string;
 }
 export interface EnrollRequest {
   full_name: string; callsign: string; agency_id: string; specialization: string; nationality: string; pin: string;
 }
 
-export interface Telemetry { fuel: number; hull: number; power: number }
+export interface Telemetry { fuel: number; hull: number; power: number; shield: number }
 export interface ObstacleOptionView { label: string; detail: string }
+export type WeatherKind = "FLR" | "SEP" | "GST" | "IPS" | "CME";
 export interface ObstacleView {
-  id: string; phase: string; title: string; description: string; nasa_ref: string; options: ObstacleOptionView[];
+  id: string; kind: "classic" | WeatherKind; severity: number; value: string; event_date: string; phase: string; title: string; description: string; nasa_ref: string; options: ObstacleOptionView[];
 }
 export interface Decision {
   obstacle_index: number; option_index: number; quality: number;
@@ -54,4 +55,10 @@ export interface Mission {
   status: "in_flight" | "success" | "partial" | "fail"; success_pct: number; points: PointsBreakdown;
   first_visit: boolean; lang: "en" | "tr" | "de"; difficulty: "easy" | "normal" | "hard"; created_at: string;
 }
-export interface MissionReport { mission: Mission; astronaut: Astronaut }
+export interface MissionReport { mission: Mission; astronaut: Astronaut; new_achievements: string[]; achievement_bonus: number }
+export interface DonkiEvent { type: WeatherKind; id: string; time: string; value: string; severity: number; link: string | null; archive: boolean; origin: "live" | "recent" | "archive" }
+export interface SpaceWeatherReport {
+  source: "live" | "recent" | "archive"; fetched_at: string; events: DonkiEvent[];
+  latest: Partial<Record<WeatherKind, DonkiEvent>>; counts: Record<string, number>;
+}
+export interface Apod { date: string; title: string; url: string | null; hdurl: string | null; copyright: string | null; explanation: string }

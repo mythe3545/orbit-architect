@@ -101,12 +101,12 @@ export const sfx = {
     r.gain.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.4);
     setTimeout(() => { try { r.src.stop(); } catch { /* already stopped */ } }, 1500);
   },
-  alarmStart() {
+  alarmStart(radiation = false) {
     if (alarmTimer !== null) return;
     let hi = false;
-    const beep = () => { hi = !hi; tone(hi ? 880 : 660, 0.28, "square", 0.08); };
+    const beep = () => { hi = !hi; if (radiation) { tone(hi ? 1500 : 1200, 0.1, "square", 0.07); burst(0.05, 4000, 0.15); } else tone(hi ? 880 : 660, 0.28, "square", 0.08); };
     beep();
-    alarmTimer = window.setInterval(beep, 340);
+    alarmTimer = window.setInterval(beep, radiation ? 160 : 340);
   },
   alarmStop() {
     if (alarmTimer !== null) { clearInterval(alarmTimer); alarmTimer = null; }

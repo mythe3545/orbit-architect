@@ -1,16 +1,19 @@
 import { NavLink, Navigate, Outlet, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { Hammer, Rocket, Warehouse, IdCard, LogOut, Star, Settings as Cog } from "lucide-react";
+import { Hammer, Rocket, Warehouse, IdCard, LogOut, Star, Settings as Cog, Award } from "lucide-react";
+import { titleFor } from "@/lib/achievements";
 import { useT } from "@/lib/i18n";
 import { useSettings } from "@/lib/settings";
 import { setAstronautId, useAstronaut, useAstronautId } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
+import ApodBackground, { ApodCredit } from "@/components/ApodBackground";
 
 const NAV = [
   { to: "/builder", label: "nav.builder", icon: Hammer },
   { to: "/launch", label: "nav.launch", icon: Rocket },
   { to: "/hangar", label: "nav.hangar", icon: Warehouse },
   { to: "/dossier", label: "nav.dossier", icon: IdCard },
+  { to: "/achievements", label: "nav.ach", icon: Award },
   { to: "/settings", label: "nav.settings", icon: Cog },
 ];
 
@@ -30,7 +33,8 @@ export default function AppShell() {
   };
 
   return (
-    <div className="min-h-dvh flex flex-col bg-background">
+    <div className="relative isolate min-h-dvh flex flex-col">
+      <ApodBackground />
       <header className="sticky top-0 z-40 border-b border-cyan-500/15 bg-[#070b12]/85 backdrop-blur-xl">
         <div className="flex items-center gap-3 px-4 lg:px-6 h-14">
           <div className="flex items-center gap-2 shrink-0" data-testid="app-logo">
@@ -65,7 +69,7 @@ export default function AppShell() {
             </div>
             <div className="hidden lg:flex flex-col leading-tight text-right" data-testid="hud-callsign">
               <span className="hud-label">{t("callsign")}</span>
-              <span className="font-mono text-sm text-white">{astro?.callsign ?? "···"}</span>
+              <span className="font-mono text-sm text-white">{astro?.callsign ?? "···"} <span className="text-amber-300/90 text-[11px]" data-testid="hud-title">· {titleFor(astro?.achievements.length ?? 0).cur.tx[lang]}</span></span>
             </div>
             <button
               onClick={logout}
@@ -82,7 +86,7 @@ export default function AppShell() {
         <Outlet />
       </main>
       <footer className="border-t border-cyan-500/10 px-4 lg:px-6 h-8 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">
-        <span>{t("footer.data")}</span>
+        <span className="flex gap-3 min-w-0"><span className="hidden md:inline shrink-0">{t("footer.data")}</span><ApodCredit /></span>
         <span className="hidden sm:inline" data-testid="hud-status">{t("footer.link")} · {astro ? t(`spec.${astro.specialization}`) : ""} · {lang.toUpperCase()}</span>
       </footer>
     </div>

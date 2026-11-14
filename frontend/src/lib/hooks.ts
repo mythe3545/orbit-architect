@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tansta
 import { useCallback, useSyncExternalStore } from "react";
 import { apiGet, apiPost, apiPut } from "@/lib/api";
 import { useSettings } from "@/lib/settings";
-import type { Astronaut, Blueprint, Catalog, NasaImage, RocketAnalysis, StackItem } from "@/lib/types";
+import type { Apod, Astronaut, Blueprint, Catalog, NasaImage, RocketAnalysis, SpaceWeatherReport, StackItem } from "@/lib/types";
 
 const KEY = "astro_id";
 const listeners = new Set<() => void>();
@@ -47,6 +47,14 @@ export function useNasaImages(q: string, limit = 1) {
     staleTime: Infinity,
     retry: 1,
   });
+}
+
+export function useSpaceWeather() {
+  return useQuery({ queryKey: ["donki"], queryFn: () => apiGet<SpaceWeatherReport>("/donki/report"), staleTime: 5 * 60_000, refetchInterval: 5 * 60_000 });
+}
+
+export function useApod() {
+  return useQuery({ queryKey: ["apod"], queryFn: () => apiGet<Apod | null>("/apod"), staleTime: 60 * 60_000, retry: 0 });
 }
 
 export function useSaveBlueprint() {

@@ -27,3 +27,17 @@ Physics/guide: backend/lib/rocket.py (single source of truth).
 - i18n: UI strings in frontend/src/lib/i18n.ts; server content (planets, categories, upgrades, rocket summaries, guide issues, obstacles, timeout text) in backend/data/i18n.py. `GET /catalog?lang=`, `POST /rocket/analyze {lang}`, `POST /missions {lang}`. Part names/descriptions stay English (proper nouns).
 - Sound: Web Audio synth in frontend/src/lib/sound.ts (no audio files).
 - Cinematic flight: frontend/src/components/FlightScene.tsx (canvas). Progress 0–30 = ascent (pad, tower, ignition smoke, camera follow, Max-Q vapour, booster sep @9, stage seps 15–27, Earth limb), 31–100 = space transit (parallax stars, Earth, NASA planet image, trajectory, craft burns). Checkpoints: launch obstacle @16, transit 42–86, arrival @94.
+
+## v3: NASA DONKI space weather + APOD
+- backend/lib/donki.py: fetches DONKI FLR/SEP/GST/IPS/CME (last 30 days) from api.nasa.gov with `NASA_API_KEY` (default DEMO_KEY, which is often 429-limited), cached 30 min (5 min if not live). If unreachable → real 2024 archive events (source="archive").
+- Endpoints: GET /api/donki/report, GET /api/apod (APOD of the day, null if unavailable → frontend falls back to Webb Carina Nebula).
+- Missions: launch + transit obstacles are generated from DONKI events (kind FLR|SEP|GST|IPS|CME, with value/date/severity); arrival obstacle stays planet-specific. Difficulty: easy = mildest events & effects ×0.7, normal = random, hard = most severe & effects ×1.35. `forced` (from the manual panel, pre-launch queue) go first. POST /missions/{id}/inject {type} inserts a DONKI crisis as the next obstacle (mid-flight trigger).
+- Mechanics: FLR radiation alarm (fast radiation beeps, solar glare), SEP drains the new `shield` telemetry, GST = power-regulator choice (best setting depends on Kp), IPS = viewport glitch + inertial-damper choice, CME = plasma wave on the route.
+- UI: SpaceWeatherPanel (Launch select page full + compact in flight), hidden SimPanel (Shift+S or faint "SIM" button bottom-left), APOD background (ApodBackground) behind all pages, compact parts library (248px).
+
+## v4: DONKI fetch order, achievements, titles
+- DONKI fetch (backend/lib/donki.py): 1) today's date only (origin "live"); 2) any type empty or failed → last 30 days (origin "recent"); 3) still nothing → built-in real 2024 archive (origin "archive"). Report `source` = live | recent | archive → UI badge "CANLI AKIŞ / SON 30 GÜN / ARŞİV RAPORU"; each event card has an origin tag.
+- Achievements (backend/data/achievements.py): 11 rules evaluated on /missions/{id}/complete; each new one adds bonus points (points + total). Astronaut.achievements: list[str]. MissionReport.new_achievements + achievement_bonus.
+- Titles by achievement count (frontend/src/lib/achievements.ts): 0 Space Cadet, 2 Orbital Pilot, 4 Mission Commander, 7 Flight Director, 10 Space Legend. Shown in the HUD + /achievements page.
+- Builder library: 2-column tiles, wrapped category chips, no horizontal scroll. APOD background opacity 0.42.
+- Flight transit: milky-way band, twinkling stars, sun + lens flare, Earth atmosphere/clouds/terminator, planet rim light, CME plasma shock rings.

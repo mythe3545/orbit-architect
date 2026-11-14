@@ -134,7 +134,7 @@ interface Debris { segs: Seg[]; boosters: { b: Booster; dx: number }[]; x: numbe
 
 export interface FlightSceneProps {
   stack: StackItem[]; parts: Record<string, Part>; progress: number; phase: "countdown" | "flight"; count: number; alert: boolean;
-  planetUrl?: string; checkpoints: number[]; decided: boolean[]; onEvent?: (e: FlightEvent) => void;
+  planetUrl?: string; checkpoints: number[]; decided: boolean[]; onEvent?: (e: FlightEvent) => void; weather?: string | null;
 }
 
 export default function FlightScene(props: FlightSceneProps) {
@@ -316,16 +316,45 @@ export default function FlightScene(props: FlightSceneProps) {
         const neb = ctx.createLinearGradient(0, H, W, 0);
         neb.addColorStop(0, "rgba(30,58,138,0)"); neb.addColorStop(0.5, "rgba(56,189,248,0.07)"); neb.addColorStop(1, "rgba(147,51,234,0)");
         ctx.fillStyle = neb; ctx.fillRect(0, 0, W, H);
-        stars.forEach((st) => {
+        // milky-way band
+        ctx.save(); ctx.translate(W / 2, H / 2); ctx.rotate(-0.42);
+        const mw = ctx.createLinearGradient(0, -H * 0.22, 0, H * 0.22);
+        mw.addColorStop(0, "rgba(148,163,184,0)"); mw.addColorStop(0.5, "rgba(203,213,225,0.08)"); mw.addColorStop(1, "rgba(148,163,184,0)");
+        ctx.fillStyle = mw; ctx.fillRect(-W, -H * 0.22, W * 2, H * 0.44); ctx.restore();
+        stars.forEach((st, i) => {
           const x = ((st.x * W - t * (4 + st.z * 18)) % W + W) % W;
-          ctx.fillStyle = `rgba(255,255,255,${0.3 + st.z * 0.7})`; ctx.fillRect(x, st.y * H, st.z > 0.9 ? 2 : 1, st.z > 0.9 ? 2 : 1);
+          const tw = 0.75 + 0.25 * Math.sin(t * (1 + st.z * 3) + i);
+          ctx.fillStyle = st.z > 0.95 ? `rgba(191,219,254,${tw})` : `rgba(255,255,255,${(0.3 + st.z * 0.7) * tw})`;
+          ctx.fillRect(x, st.y * H, st.z > 0.9 ? 2 : 1, st.z > 0.9 ? 2 : 1);
         });
+        // distant sun + lens flare
+        const sx = W * 0.55, sy = H * 0.1;
+        const sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, H * 0.35);
+        sg.addColorStop(0, "rgba(255,251,235,0.95)"); sg.addColorStop(0.04, "rgba(254,240,138,0.55)"); sg.addColorStop(0.3, "rgba(251,191,36,0.08)"); sg.addColorStop(1, "rgba(251,191,36,0)");
+        ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(sx, sy, H * 0.35, 0, Math.PI * 2); ctx.fill();
+        ctx.globalCompositeOperation = "lighter";
+        [[0.35, 10, "125,211,252"], [0.62, 22, "167,139,250"], [0.85, 6, "253,224,71"]].forEach(([k, rr, c]) => {
+          const fx = sx + (W / 2 - sx) * 2 * (k as number), fy = sy + (H / 2 - sy) * 2 * (k as number);
+          ctx.fillStyle = `rgba(${c},0.07)`; ctx.beginPath(); ctx.arc(fx, fy, (rr as number) * (H / 400), 0, Math.PI * 2); ctx.fill();
+        });
+        ctx.fillStyle = "rgba(255,250,230,0.12)"; ctx.fillRect(sx - W * 0.25, sy - 0.5, W * 0.5, 1);
+        ctx.globalCompositeOperation = "source-over";
         // earth
         const ex = W * (0.14 - tt * 0.12), ey = H * (0.82 + tt * 0.1), er = H * (0.5 - 0.4 * tt);
         const eg = ctx.createRadialGradient(ex - er * 0.3, ey - er * 0.3, er * 0.1, ex, ey, er);
         eg.addColorStop(0, "#7dd3fc"); eg.addColorStop(0.5, "#0369a1"); eg.addColorStop(1, "#082f49");
+        const atm = ctx.createRadialGradient(ex, ey, er * 0.98, ex, ey, er * 1.12);
+        atm.addColorStop(0, "rgba(125,211,252,0.55)"); atm.addColorStop(1, "rgba(56,189,248,0)");
+        ctx.fillStyle = atm; ctx.beginPath(); ctx.arc(ex, ey, er * 1.12, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = eg; ctx.beginPath(); ctx.arc(ex, ey, er, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = "rgba(125,211,252,0.45)"; ctx.lineWidth = Math.max(2, er * 0.04); ctx.beginPath(); ctx.arc(ex, ey, er * 1.02, 0, Math.PI * 2); ctx.stroke();
+        ctx.save(); ctx.beginPath(); ctx.arc(ex, ey, er, 0, Math.PI * 2); ctx.clip();
+        ctx.fillStyle = "rgba(34,197,94,0.22)";
+        for (let k = 0; k < 5; k++) { ctx.beginPath(); ctx.ellipse(ex - er * 0.5 + k * er * 0.28 + Math.sin(t * 0.05 + k) * er * 0.05, ey - er * 0.35 + (k % 2) * er * 0.3, er * 0.18, er * 0.1, k, 0, Math.PI * 2); ctx.fill(); }
+        ctx.strokeStyle = "rgba(255,255,255,0.22)"; ctx.lineWidth = Math.max(1.5, er * 0.03);
+        for (let k = 0; k < 6; k++) { const yy = ey - er * 0.8 + k * er * 0.3; ctx.beginPath(); ctx.moveTo(ex - er + ((t * 6 + k * 40) % (er * 0.6)), yy); ctx.bezierCurveTo(ex - er * 0.3, yy - er * 0.08, ex + er * 0.2, yy + er * 0.08, ex + er, yy); ctx.stroke(); }
+        const term = ctx.createLinearGradient(ex + er, ey + er, ex - er * 0.2, ey - er * 0.2);
+        term.addColorStop(0, "rgba(2,4,10,0.85)"); term.addColorStop(0.55, "rgba(2,4,10,0)");
+        ctx.fillStyle = term; ctx.fillRect(ex - er, ey - er, er * 2, er * 2); ctx.restore();
         // planet
         const px = W * 0.82, py = H * 0.32, pR = H * (0.06 + 0.25 * Math.pow(tt, 1.5));
         const glow = ctx.createRadialGradient(px, py, pR, px, py, pR * 1.5);
@@ -336,6 +365,8 @@ export default function FlightScene(props: FlightSceneProps) {
         else { ctx.fillStyle = "#64748b"; ctx.fillRect(px - pR, py - pR, pR * 2, pR * 2); }
         const sh = ctx.createLinearGradient(px - pR, 0, px + pR, 0); sh.addColorStop(0, "rgba(0,0,0,0.7)"); sh.addColorStop(0.45, "rgba(0,0,0,0)");
         ctx.fillStyle = sh; ctx.fillRect(px - pR, py - pR, pR * 2, pR * 2); ctx.restore();
+        ctx.strokeStyle = "rgba(255,247,220,0.5)"; ctx.lineWidth = Math.max(1, pR * 0.03);
+        ctx.beginPath(); ctx.arc(px, py, pR, -Math.PI * 0.75, Math.PI * 0.05); ctx.stroke();
         // trajectory
         const p0 = [ex + er * 0.72, ey - er * 0.72], p1 = [W * 0.45, -H * 0.05], p2 = [px - pR * 0.95, py + pR * 0.3];
         const bz = (u: number) => [0, 1].map((i) => (1 - u) ** 2 * p0[i] + 2 * (1 - u) * u * p1[i] + u * u * p2[i]);
@@ -367,6 +398,39 @@ export default function FlightScene(props: FlightSceneProps) {
       // transition flash + alert vignette
       const fade = clamp(1 - Math.abs(disp - 31) / 2.5);
       if (fade > 0) { ctx.fillStyle = `rgba(2,4,10,${fade})`; ctx.fillRect(-10, -10, W + 20, H + 20); }
+      // DONKI space-weather effects
+      if (P.weather === "FLR") {
+        const f = Math.pow(Math.max(0, Math.sin(t * 3)), 8) * 0.35;
+        const sun = ctx.createRadialGradient(0, 0, 0, 0, 0, W * 0.7);
+        sun.addColorStop(0, `rgba(255,240,170,${0.35 + f})`); sun.addColorStop(1, "rgba(255,200,50,0)");
+        ctx.fillStyle = sun; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = `rgba(255,255,220,${f})`; ctx.fillRect(0, 0, W, H);
+      } else if (P.weather === "SEP") {
+        ctx.strokeStyle = "rgba(244,114,182,0.7)"; ctx.lineWidth = 1.2;
+        for (let i = 0; i < 70; i++) {
+          const x = ((i * 97.3 + t * 900) % (W + 200)) - 100, y = ((i * 53.7 + t * 520) % (H + 200)) - 100;
+          ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 26, y - 15); ctx.stroke();
+        }
+      } else if (P.weather === "GST") {
+        for (let b = 0; b < 3; b++) {
+          ctx.fillStyle = `rgba(52,211,153,${0.12 + 0.06 * Math.sin(t * 2 + b)})`;
+          ctx.beginPath(); ctx.moveTo(0, 0);
+          for (let x = 0; x <= W; x += 20) ctx.lineTo(x, H * (0.12 + b * 0.07) + Math.sin(x / 90 + t * (1.5 + b * 0.4)) * 22);
+          ctx.lineTo(W, 0); ctx.fill();
+        }
+      } else if (P.weather === "IPS") {
+        for (let i = 0; i < 6; i++) {
+          ctx.fillStyle = i % 2 ? "rgba(0,229,255,0.18)" : "rgba(244,63,94,0.18)";
+          ctx.fillRect(rnd(-40, 0), rnd(0, H), W + 80, rnd(3, 18));
+        }
+      } else if (P.weather === "CME") {
+        for (let w = 0; w < 2; w++) {
+          const r = ((t * 260 + w * W * 0.8) % (W * 1.6)) + 40;
+          const pg = ctx.createRadialGradient(-W * 0.1, -H * 0.1, Math.max(1, r - 60), -W * 0.1, -H * 0.1, r + 24);
+          pg.addColorStop(0, "rgba(192,132,252,0)"); pg.addColorStop(0.7, "rgba(192,132,252,0.28)"); pg.addColorStop(0.95, "rgba(240,220,255,0.6)"); pg.addColorStop(1, "rgba(240,220,255,0)");
+          ctx.fillStyle = pg; ctx.beginPath(); ctx.arc(-W * 0.1, -H * 0.1, r + 24, 0, Math.PI * 2); ctx.fill();
+        }
+      }
       if (P.alert) {
         const v = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.max(W, H) * 0.7);
         v.addColorStop(0, "rgba(220,38,38,0)"); v.addColorStop(1, `rgba(220,38,38,${0.25 + 0.15 * Math.sin(t * 7)})`);

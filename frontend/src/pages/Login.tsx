@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import ApodBackground from "@/components/ApodBackground";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const SPECS = ["Flight Commander", "Mission Pilot", "Propulsion Specialist", "Orbital Navigator", "Systems Engineer", "Mission Specialist"];
@@ -61,8 +62,9 @@ export default function Login() {
   const set = (k: keyof EnrollRequest) => (e: React.ChangeEvent<HTMLInputElement>) => setEnroll({ ...enroll, [k]: e.target.value });
 
   return (
-    <div className="min-h-dvh grid lg:grid-cols-[minmax(0,560px)_1fr] bg-background">
-      <section className="relative flex flex-col justify-center px-6 sm:px-12 py-10 border-r border-cyan-500/10">
+    <div className="relative isolate min-h-dvh grid lg:grid-cols-[minmax(0,560px)_1fr]">
+      <ApodBackground />
+      <section className="relative flex flex-col justify-center px-6 sm:px-12 py-10 border-r border-cyan-500/10 bg-[#070b12]/55 backdrop-blur-md">
         <div className="mb-8">
           <div className="flex gap-1.5 mb-6" data-testid="login-lang-switch">
             {(Object.keys(LANG_LABELS) as Lang[]).map((l) => (

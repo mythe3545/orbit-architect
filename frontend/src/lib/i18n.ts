@@ -4,6 +4,15 @@ import { useSettings, type Lang } from "@/lib/settings";
 type Dict = Record<string, string>;
 
 const en: Dict = {
+  "sw.title": "Space Weather · DONKI Live Report", "sw.live": "LIVE FEED", "sw.recent": "30-DAY ARCHIVE", "sw.archive": "ARCHIVE REPORT", "o.live": "TODAY", "o.recent": "30 DAYS", "o.archive": "2024", "nav.ach": "Achievements", "sw.updated": "Updated {t} UTC",
+  "sw.active": "ACTIVE", "sw.archiveNote": "No event today: showing the latest recorded NASA events.", "sw.src": "Source: NASA DONKI (api.nasa.gov)",
+  "sw.inFlight": "These real events become your in-flight crises", "k.FLR": "Solar Flare", "k.SEP": "Solar Energetic Particles", "k.GST": "Geomagnetic Storm",
+  "k.IPS": "Interplanetary Shock", "k.CME": "Coronal Mass Ejection", "m.FLR": "Radiation alarm", "m.SEP": "Shield drain", "m.GST": "Power regulator",
+  "m.IPS": "Inertial dampers", "m.CME": "Plasma wave", "sev.1": "Minor", "sev.2": "Moderate", "sev.3": "Strong", "sev.4": "Extreme",
+  "sim.title": "Manual simulation triggers", "sim.hint": "Shift+S toggles this panel", "sim.pre": "Before launch: queue events as the first crises.",
+  "sim.mid": "In flight: trigger an event immediately.", "sim.queued": "Queued: {x}", "sim.injected": "{x} triggered", "sim.clear": "Clear queue",
+  "shield": "Outer shield", "fx.FLR": "RADIATION ALARM", "fx.SEP": "PROTON STORM · SHIELD FAILING", "fx.GST": "POWER BUS UNSTABLE", "fx.IPS": "INERTIAL REFERENCE LOST", "fx.CME": "PLASMA WAVE AHEAD",
+  "reg": "Power regulator", "donkiEvent": "DONKI event", 
   "nav.builder": "Builder", "nav.launch": "Launch", "nav.hangar": "Fleet & Upgrades", "nav.dossier": "Dossier", "nav.settings": "Settings",
   "callsign": "Callsign", "footer.data": "Data: NASA / NSSDCA fact sheets · NASA Image Library", "footer.link": "Link nominal",
   "login.kicker": "NASA crew systems · Credential terminal",
@@ -67,6 +76,15 @@ const en: Dict = {
 };
 
 const tr: Dict = {
+  "sw.title": "Uzay Hava Durumu · DONKI Canlı Raporu", "sw.live": "CANLI AKIŞ", "sw.recent": "SON 30 GÜN", "sw.archive": "ARŞİV RAPORU", "o.live": "BUGÜN", "o.recent": "30 GÜN", "o.archive": "2024", "nav.ach": "Başarımlar", "sw.updated": "Güncellendi {t} UTC",
+  "sw.active": "AKTİF", "sw.archiveNote": "Bugün yeni olay yok: en son kaydedilen NASA olayları gösteriliyor.", "sw.src": "Kaynak: NASA DONKI (api.nasa.gov)",
+  "sw.inFlight": "Bu gerçek olaylar uçuştaki krizlerin olur", "k.FLR": "Güneş Patlaması", "k.SEP": "Güneş Enerjili Parçacıklar", "k.GST": "Jeomanyetik Fırtına",
+  "k.IPS": "Gezegenlerarası Şok", "k.CME": "Koronal Kütle Atımı", "m.FLR": "Radyasyon alarmı", "m.SEP": "Kalkan aşınması", "m.GST": "Güç regülatörü",
+  "m.IPS": "Atalet dengeleyici", "m.CME": "Plazma dalgası", "sev.1": "Hafif", "sev.2": "Orta", "sev.3": "Güçlü", "sev.4": "Aşırı",
+  "sim.title": "Manuel simülasyon tetikleme", "sim.hint": "Shift+S paneli açar/kapatır", "sim.pre": "Fırlatmadan önce: olayları ilk krizler olarak sıraya al.",
+  "sim.mid": "Uçuşta: olayı anında tetikle.", "sim.queued": "Sırada: {x}", "sim.injected": "{x} tetiklendi", "sim.clear": "Sırayı temizle",
+  "shield": "Dış kalkan", "fx.FLR": "RADYASYON ALARMI", "fx.SEP": "PROTON FIRTINASI · KALKAN ÇÖKÜYOR", "fx.GST": "GÜÇ HATTI KARARSIZ", "fx.IPS": "ATALET REFERANSI KAYIP", "fx.CME": "ÖNDE PLAZMA DALGASI",
+  "reg": "Güç regülatörü", "donkiEvent": "DONKI olayı", 
   "nav.builder": "Tasarım", "nav.launch": "Fırlatma", "nav.hangar": "Filo & Yükseltmeler", "nav.dossier": "Dosya", "nav.settings": "Ayarlar",
   "callsign": "Çağrı adı", "footer.data": "Veri: NASA / NSSDCA bilgi sayfaları · NASA Görsel Kütüphanesi", "footer.link": "Bağlantı normal",
   "login.kicker": "NASA mürettebat sistemleri · Kimlik terminali",
@@ -130,6 +148,15 @@ const tr: Dict = {
 };
 
 const de: Dict = {
+  "sw.title": "Weltraumwetter · DONKI-Livebericht", "sw.live": "LIVE-FEED", "sw.recent": "30-TAGE-ARCHIV", "sw.archive": "ARCHIVBERICHT", "o.live": "HEUTE", "o.recent": "30 TAGE", "o.archive": "2024", "nav.ach": "Erfolge", "sw.updated": "Aktualisiert {t} UTC",
+  "sw.active": "AKTIV", "sw.archiveNote": "Heute kein Ereignis: die zuletzt erfassten NASA-Ereignisse.", "sw.src": "Quelle: NASA DONKI (api.nasa.gov)",
+  "sw.inFlight": "Diese echten Ereignisse werden zu deinen Krisen im Flug", "k.FLR": "Sonneneruption", "k.SEP": "Energiereiche Sonnenteilchen", "k.GST": "Geomagnetischer Sturm",
+  "k.IPS": "Interplanetarer Schock", "k.CME": "Koronaler Massenauswurf", "m.FLR": "Strahlungsalarm", "m.SEP": "Schildverlust", "m.GST": "Leistungsregler",
+  "m.IPS": "Trägheitsdämpfer", "m.CME": "Plasmawelle", "sev.1": "Schwach", "sev.2": "Mäßig", "sev.3": "Stark", "sev.4": "Extrem",
+  "sim.title": "Manuelle Simulationsauslöser", "sim.hint": "Shift+S blendet dieses Panel ein/aus", "sim.pre": "Vor dem Start: Ereignisse als erste Krisen einreihen.",
+  "sim.mid": "Im Flug: Ereignis sofort auslösen.", "sim.queued": "Eingereiht: {x}", "sim.injected": "{x} ausgelöst", "sim.clear": "Warteschlange leeren",
+  "shield": "Außenschild", "fx.FLR": "STRAHLUNGSALARM", "fx.SEP": "PROTONENSTURM · SCHILD VERSAGT", "fx.GST": "BORDNETZ INSTABIL", "fx.IPS": "TRÄGHEITSREFERENZ VERLOREN", "fx.CME": "PLASMAWELLE VORAUS",
+  "reg": "Leistungsregler", "donkiEvent": "DONKI-Ereignis", 
   "nav.builder": "Baukasten", "nav.launch": "Start", "nav.hangar": "Flotte & Upgrades", "nav.dossier": "Dossier", "nav.settings": "Einstellungen",
   "callsign": "Rufzeichen", "footer.data": "Daten: NASA / NSSDCA-Datenblätter · NASA Image Library", "footer.link": "Verbindung nominal",
   "login.kicker": "NASA-Crewsysteme · Anmeldeterminal",

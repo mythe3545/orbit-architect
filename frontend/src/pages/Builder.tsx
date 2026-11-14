@@ -27,35 +27,35 @@ function LibraryPanel({ catalog, onAdd }: { catalog: Catalog; onAdd: (id: string
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-500" />
         <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("lib.search")} className="pl-9 h-10 text-base bg-[#050914] font-mono" data-testid="library-search-input" />
       </div>
-      <div className="flex flex-wrap gap-1.5 mb-3">
+      <div className="flex flex-wrap gap-1 mb-2">
         {[{ id: "all", label: t("lib.all") }, ...catalog.categories].map((c) => (
           <button key={c.id} onClick={() => setCat(c.id)} data-testid={`library-category-${c.id}`}
-            className={cn("px-2.5 py-1 rounded-full text-[11px] font-mono border transition-colors duration-150",
+            className={cn("px-1.5 py-0.5 rounded text-[9.5px] leading-tight font-mono border transition-colors duration-150",
               cat === c.id ? "border-cyan-300 bg-cyan-300/15 text-cyan-100" : "border-slate-700 text-slate-400 hover:text-white")}>
             {c.label}
           </button>
         ))}
       </div>
-      <div className="flex-1 min-h-0 overflow-y-auto space-y-2 pr-1">
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden grid grid-cols-2 gap-1.5 content-start pr-1">
         {parts.map((p) => (
           <div key={p.id} draggable onDragStart={(e) => e.dataTransfer.setData("text/plain", `part:${p.id}`)}
             data-testid={`part-item-${p.id}`}
-            className="group flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-900/60 p-2.5 cursor-grab active:cursor-grabbing hover:border-cyan-400/60 hover:-translate-y-0.5 transition-[transform,border-color] duration-200">
-            <div className="w-12 h-12 shrink-0 grid place-items-center rounded-md blueprint-grid overflow-hidden">
-              <div className="scale-[0.85]"><PartShape part={p} qty={1} scale={Math.min(4, 38 / Math.max(p.diameter_m, 1))} /></div>
+            title={`${p.name} · ${p.program}\n${p.description}`}
+            className="group relative flex flex-col items-center text-center gap-1 rounded-lg border border-slate-800/80 bg-white/[0.03] p-1.5 pt-2 min-w-0 cursor-grab active:cursor-grabbing hover:border-cyan-400/50 hover:bg-cyan-400/5 transition-[border-color,background-color] duration-150">
+            <div className="w-full h-9 grid place-items-center overflow-hidden rounded blueprint-grid">
+              <div className="scale-[0.6]"><PartShape part={p} qty={1} scale={Math.min(3, 30 / Math.max(p.diameter_m, 1))} /></div>
             </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-sm text-white truncate">{p.name}</div>
-              <div className="font-mono text-[10px] text-slate-500 truncate">{p.program}</div>
-              <div className="font-mono text-[10px] text-slate-400 flex gap-2 mt-0.5">
+            <div className="min-w-0 w-full">
+              <div className="text-[11px] leading-tight text-white line-clamp-2 min-h-[2.2em]">{p.name}</div>
+              <div className="font-mono text-[9px] text-slate-400 flex justify-center gap-1.5 truncate">
                 <span>{p.mass_t}t</span>
                 {p.thrust_vac_kn > 0 && <span>{p.thrust_sl_kn || p.thrust_vac_kn}kN</span>}
                 {p.propellant && <span style={{ color: propColor(p.propellant) }}>{p.propellant}</span>}
               </div>
             </div>
             <button onClick={() => onAdd(p.id)} data-testid={`part-add-${p.id}`} aria-label={`Add ${p.name}`}
-              className="size-8 shrink-0 grid place-items-center rounded-md border border-cyan-500/30 text-cyan-300 hover:bg-cyan-400/15 transition-colors duration-150">
-              <Plus className="size-4" />
+              className="absolute top-1 right-1 size-5 grid place-items-center rounded bg-black/60 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-400/25 transition-colors duration-150">
+              <Plus className="size-3.5" />
             </button>
           </div>
         ))}
@@ -235,10 +235,10 @@ function BuilderInner({ catalog, initial, astronautId }: { catalog: Catalog; ini
           </div>
           <AnimatePresence initial={false}>
             {libOpen && (
-              <motion.div initial={{ width: 0, opacity: 0 }} animate={{ width: 300, opacity: 1 }} exit={{ width: 0, opacity: 0 }} transition={{ duration: 0.22 }}
-                className="overflow-hidden rounded-xl border border-cyan-500/20 bg-slate-900/60">
-                <div className="w-[300px] h-full p-4 flex flex-col min-h-0">
-                  <div className="hud-label mb-3">{t("lib.title", { n: catalog.parts.length })}</div>
+              <motion.div initial={{ width: 0, opacity: 0 }} animate={{ width: 288, opacity: 1 }} exit={{ width: 0, opacity: 0 }} transition={{ duration: 0.22 }}
+                className="overflow-hidden rounded-xl border border-cyan-500/20 bg-[#070b12]/70 backdrop-blur-md">
+                <div className="w-[288px] h-full p-3 flex flex-col min-h-0">
+                  <div className="hud-label mb-2">{t("lib.title", { n: catalog.parts.length })}</div>
                   <LibraryPanel catalog={catalog} onAdd={(id) => insertAt(stack.length, id)} />
                 </div>
               </motion.div>
@@ -315,7 +315,7 @@ function BuilderInner({ catalog, initial, astronautId }: { catalog: Catalog; ini
         </section>
 
         {/* telemetry + guide */}
-        <aside className="min-h-0 overflow-y-auto rounded-xl border border-cyan-500/20 bg-slate-900/60 p-4 space-y-4" data-testid="guide-panel">
+        <aside className="min-h-0 overflow-y-auto rounded-xl border border-cyan-500/20 bg-[#070b12]/70 backdrop-blur-md p-4 space-y-4" data-testid="guide-panel">
           <div>
             <div className="hud-label mb-2">{t("telemetry")}</div>
             <div className="grid grid-cols-2 gap-2">

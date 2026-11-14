@@ -6,9 +6,12 @@ import { toast } from "sonner";
 import { AlertOctagon, CheckCircle2, Fuel, Gauge, Rocket, Shield, Wrench, Zap, Timer, Trophy, Orbit } from "lucide-react";
 import { apiPost, ApiError } from "@/lib/api";
 import { useAnalysis, useAstronaut, useAstronautId, useCatalog, useNasaImages } from "@/lib/hooks";
-import type { Decision, Mission, MissionReport, Planet, Telemetry } from "@/lib/types";
+import type { Decision, Mission, MissionReport, Planet, Telemetry, WeatherKind } from "@/lib/types";
 import { RocketGraphic } from "@/components/RocketGraphic";
 import FlightScene, { type FlightEvent } from "@/components/FlightScene";
+import SpaceWeatherPanel, { KIND_COLOR, KIND_ICON } from "@/components/SpaceWeatherPanel";
+import SimPanel from "@/components/SimPanel";
+import { ACHIEVEMENTS } from "@/lib/achievements";
 import { useT } from "@/lib/i18n";
 import { useSettings } from "@/lib/settings";
 import { sfx } from "@/lib/sound";
@@ -82,17 +85,46 @@ function CrisisCard({ mission, index, onChoose, busy }: { mission: Mission; inde
     if (left === 0 && !fired.current && !busy) { fired.current = true; onChoose(-1); }
   }, [left, busy, onChoose]);
   const pct = (left / mission.decision_seconds) * 100;
+  const weather = o.kind !== "classic" ? o.kind : null;
+  const WIcon = weather ? KIND_ICON[weather] : AlertOctagon;
+  const regLevel = (label: string) => Number(label.match(/(\d+)\s*%|%\s*(\d+)/)?.slice(1).find(Boolean) ?? 50);
   return (
     <motion.div initial={{ opacity: 0, y: 12, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }}
       className="rounded-xl border border-rose-400/50 bg-[#2a0e15]/95 backdrop-blur-xl p-4 animate-urgent" data-testid="crisis-card">
       <div className="flex items-center justify-between mb-2">
-        <span className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-rose-300"><AlertOctagon className="size-3.5" /> {t("alarm")} · {t(`ph.${o.phase}`)}</span>
+        <span className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em]" style={{ color: weather ? KIND_COLOR[weather] : "#fda4af" }} data-testid="crisis-kind">
+          <WIcon className={cn("size-3.5", weather === "FLR" && "animate-spin [animation-duration:3s]")} /> {weather ? t(`fx.${weather}`) : t("alarm")} · {t(`ph.${o.phase}`)}</span>
         <span className="flex items-center gap-1 font-mono text-sm text-rose-100 tabular-nums" data-testid="crisis-timer"><Timer className="size-3.5" />{left}s</span>
       </div>
       <div className="h-1 rounded bg-rose-950 mb-3 overflow-hidden"><div className="h-full bg-gradient-to-r from-amber-400 to-rose-500 transition-[width] duration-1000 ease-linear" style={{ width: `${pct}%` }} /></div>
+      {weather && (
+        <div className="flex flex-wrap gap-1.5 mb-2 font-mono text-[10px]" data-testid="crisis-donki-badge">
+          <span className="px-2 py-0.5 rounded border" style={{ borderColor: KIND_COLOR[weather], color: KIND_COLOR[weather] }}>{t("donkiEvent")} · {weather}</span>
+          <span className="px-2 py-0.5 rounded border border-slate-600 text-slate-200">{o.value}</span>
+          <span className="px-2 py-0.5 rounded border border-slate-600 text-slate-300">{o.event_date}</span>
+          <span className="px-2 py-0.5 rounded border border-rose-400/50 text-rose-200">{t(`sev.${o.severity}`)}</span>
+        </div>
+      )}
       <h3 className="font-heading text-xl text-white" data-testid="crisis-title">{o.title}</h3>
       <p className="text-sm text-rose-100/90 mt-1">{o.description}</p>
       <p className="font-mono text-[10px] text-rose-300/70 mt-2">{t("nasaRef")} · {o.nasa_ref}</p>
+      {weather === "GST" ? (
+        <div className="mt-3" data-testid="power-regulator">
+          <div className="hud-label text-emerald-300/80 mb-2">{t("reg")}</div>
+          <div className="grid grid-cols-3 gap-2">
+            {o.options.map((op, i) => (
+              <button key={i} disabled={busy} onClick={() => { fired.current = true; sfx.click(); onChoose(i); }} data-testid={`crisis-choice-${i}`}
+                className="group rounded-lg border border-slate-700 bg-slate-950/70 p-2 hover:border-emerald-300 transition-[border-color] duration-150 disabled:opacity-50">
+                <div className="relative h-20 w-6 mx-auto rounded bg-slate-800 overflow-hidden">
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-emerald-500 via-amber-400 to-rose-500 transition-[height] duration-300" style={{ height: `${regLevel(op.label)}%` }} />
+                </div>
+                <div className="font-mono text-sm text-white mt-1.5">{regLevel(op.label)}%</div>
+                <div className="text-[10px] text-slate-400 leading-tight mt-0.5">{op.detail}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
       <div className="mt-3 space-y-2">
         {o.options.map((op, i) => (
           <button key={i} disabled={busy} onClick={() => { fired.current = true; sfx.click(); onChoose(i); }} data-testid={`crisis-choice-${i}`}
@@ -102,6 +134,7 @@ function CrisisCard({ mission, index, onChoose, busy }: { mission: Mission; inde
           </button>
         ))}
       </div>
+      )}
     </motion.div>
   );
 }
@@ -138,21 +171,24 @@ export default function Launch() {
   const [lastResult, setLastResult] = useState<Decision | null>(null);
   const [report, setReport] = useState<MissionReport | null>(null);
   const completing = useRef(false);
+  const [forced, setForced] = useState<WeatherKind[]>([]);
+  const [cps, setCps] = useState<number[]>([]);
 
   const planet = catalog?.planets.find((p) => p.id === planetId);
   const { data: planetImgs } = useNasaImages(planet?.image_query ?? "Moon", 1);
   const n = mission?.obstacles.length ?? 0;
-  const checkpoints = useMemo(() => {
-    const obs = mission?.obstacles ?? [];
+  const baseCheckpoints = (m: Mission) => {
+    const obs = m.obstacles;
     const transit = obs.filter((o) => o.phase === "transit").length;
     let k = 0;
     return obs.map((o) => (o.phase === "launch" ? 16 : o.phase === "arrival" ? 94 : 42 + (k++ + 0.5) * (44 / Math.max(1, transit))));
-  }, [mission]);
-  const telemetry: Telemetry = lastResult?.telemetry ?? decisions.at(-1)?.telemetry ?? mission?.telemetry ?? { fuel: 100, hull: 100, power: 100 };
+  };
+  const checkpoints = cps;
+  const telemetry: Telemetry = lastResult?.telemetry ?? decisions.at(-1)?.telemetry ?? mission?.telemetry ?? { fuel: 100, hull: 100, power: 100, shield: 100 };
 
   const startM = useMutation({
-    mutationFn: () => apiPost<Mission>("/missions", { astronaut_id: id, planet_id: planetId, rocket_label: astro?.blueprint.label, stack, lang: settings.lang, difficulty: settings.difficulty }),
-    onSuccess: (m) => { setMission(m); setDecisions([]); setProgress(0); setCrisis(null); setLastResult(null); setReport(null); completing.current = false; setCount(5); setPhase("countdown"); },
+    mutationFn: () => apiPost<Mission>("/missions", { astronaut_id: id, planet_id: planetId, rocket_label: astro?.blueprint.label, stack, lang: settings.lang, difficulty: settings.difficulty, forced }),
+    onSuccess: (m) => { setMission(m); setCps(baseCheckpoints(m)); setForced([]); setDecisions([]); setProgress(0); setCrisis(null); setLastResult(null); setReport(null); completing.current = false; setCount(5); setPhase("countdown"); },
     onError: (e) => toast.error(e instanceof ApiError ? String((e.body as { detail?: string })?.detail ?? t("toast.scrub")) : t("toast.scrub")),
   });
   const decideM = useMutation({
@@ -160,6 +196,25 @@ export default function Launch() {
     onSuccess: (d) => { sfx.alarmStop(); if (d.overcome) sfx.good(); else sfx.bad(); setDecisions((x) => [...x, d]); setLastResult(d); setCrisis(null); if (d.points) toast.success(t("toast.overcome", { n: d.points })); },
     onError: () => toast.error(t("toast.uplink")),
   });
+  const injectM = useMutation({
+    mutationFn: (k: WeatherKind) => apiPost<Mission>(`/missions/${mission!.id}/inject`, { type: k }),
+    onSuccess: (m, k) => {
+      const at = decisions.length;
+      setMission(m);
+      setCps((c) => [...c.slice(0, at), Math.min(progress, 99), ...c.slice(at)]);
+      setLastResult(null);
+      toast.message(t("sim.injected", { x: t(`k.${k}`) }));
+    },
+    onError: () => toast.error(t("toast.uplink")),
+  });
+  const onSim = (k: WeatherKind) => {
+    if (phase === "flight" && mission && crisis === null) injectM.mutate(k);
+    else if (phase === "select") setForced((f) => (f.includes(k) ? f.filter((x) => x !== k) : [...f, k]));
+  };
+  const simPanel = (phase === "select" || phase === "flight") && (
+    <SimPanel inFlight={phase === "flight"} queued={forced} onTrigger={onSim} onClear={() => setForced([])} disabled={phase === "flight" && (crisis !== null || injectM.isPending)} />
+  );
+  const activeWeather = crisis !== null ? mission?.obstacles[crisis]?.kind : null;
   const completeM = useMutation({
     mutationFn: () => apiPost<MissionReport>(`/missions/${mission!.id}/complete`),
     onSuccess: (r) => { sfx.stopAll(); if (r.mission.status === "fail") sfx.fail(); else sfx.success(); setReport(r); qc.setQueryData(["astronaut", r.astronaut.id], r.astronaut); qc.invalidateQueries({ queryKey: ["missions"] }); setPhase("report"); },
@@ -185,7 +240,7 @@ export default function Launch() {
 
   // engine rumble fades with altitude; alarm while a crisis is open
   useEffect(() => { if (phase === "flight") { if (progress < 31) sfx.rumbleSet(1 - progress / 34); else sfx.rumbleStop(); } }, [phase, progress]);
-  useEffect(() => { if (crisis !== null) sfx.alarmStart(); else sfx.alarmStop(); }, [crisis]);
+  useEffect(() => { if (crisis !== null) sfx.alarmStart(mission?.obstacles[crisis]?.kind === "FLR"); else sfx.alarmStop(); }, [crisis, mission]);
   useEffect(() => () => sfx.stopAll(), []);
   const onEvent = useCallback((e: FlightEvent) => {
     if (e === "booster" || e === "stage") sfx.staging();
@@ -230,6 +285,12 @@ export default function Launch() {
             <Link to="/builder" className={buttonVariants({ variant: "outline", size: "sm" })}>{t("fixBuilder")}</Link>
           </div>
         )}
+        <div className="mb-5"><SpaceWeatherPanel /></div>
+        {forced.length > 0 && (
+          <div className="mb-4 flex flex-wrap gap-2 font-mono text-[11px]" data-testid="forced-events">
+            {forced.map((k) => <span key={k} className="px-2 py-0.5 rounded-full border" style={{ borderColor: KIND_COLOR[k], color: KIND_COLOR[k] }}>{t(`k.${k}`)}</span>)}
+          </div>
+        )}
         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
           {catalog.planets.map((p) => (
             <PlanetCard key={p.id} planet={p} dv={stats?.delta_v_ms ?? 0} selected={p.id === planetId} explored={astro.explored.includes(p.id)} onSelect={() => setPlanetId(p.id)} />
@@ -246,6 +307,7 @@ export default function Launch() {
             </Button>
           </div>
         )}
+        {simPanel}
       </div>
     );
   }
@@ -292,6 +354,20 @@ export default function Launch() {
             </div>
           </div>
         </div>
+        {report.new_achievements.length > 0 && (
+          <div className="mt-6 rounded-xl border border-amber-400/50 bg-amber-400/[0.07] backdrop-blur-md p-4" data-testid="report-achievements">
+            <div className="flex items-center justify-between mb-2"><span className="hud-label text-amber-300">{t("nav.ach")}</span><span className="font-mono text-sm text-amber-200">+{report.achievement_bonus}</span></div>
+            <div className="flex flex-wrap gap-2">
+              {report.new_achievements.map((id, i) => {
+                const a = ACHIEVEMENTS.find((x) => x.id === id);
+                return a ? (
+                  <motion.span key={id} initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.4 + i * 0.12, type: "spring" }}
+                    className="flex items-center gap-1.5 rounded-full border border-amber-300/50 bg-black/40 px-3 py-1 text-sm text-white">{a.icon} {a.tx[settings.lang][0]} <span className="font-mono text-[10px] text-amber-300">+{a.bonus}</span></motion.span>
+                ) : null;
+              })}
+            </div>
+          </div>
+        )}
         <div className="mt-8 space-y-2" data-testid="decision-log">
           <div className="hud-label">{t("decisionLog")}</div>
           {m.decisions.map((d, i) => (
@@ -317,9 +393,10 @@ export default function Launch() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 p-4 lg:p-6 max-w-[1600px] mx-auto">
-      <section className="lg:col-span-8 relative rounded-xl border border-cyan-500/30 overflow-hidden bg-black h-[62vh] min-h-[440px]" data-testid="flight-viewport">
+      {simPanel}
+      <section className={cn("lg:col-span-8 relative rounded-xl border border-cyan-500/30 overflow-hidden bg-black h-[62vh] min-h-[440px]", activeWeather === "IPS" && settings.shake && "animate-glitch")} data-testid="flight-viewport">
         <FlightScene stack={stack} parts={parts} progress={progress} phase={phase === "countdown" ? "countdown" : "flight"} count={count}
-          alert={crisis !== null} planetUrl={planet?.image_url ?? planetImgs?.[0]?.url} checkpoints={checkpoints} decided={decisions.map((d) => d.overcome)} onEvent={onEvent} />
+          alert={crisis !== null} planetUrl={planet?.image_url ?? planetImgs?.[0]?.url} checkpoints={checkpoints} decided={decisions.map((d) => d.overcome)} onEvent={onEvent} weather={activeWeather === "classic" ? null : activeWeather} />
         <div className="absolute inset-0 scanlines opacity-20 pointer-events-none" />
         <div className="absolute top-4 left-4 right-4 flex flex-wrap gap-2 z-10 pointer-events-none">
           {[["met", fmtMet], ["alt", inSpace ? `${altKm.toLocaleString()} km` : `${altKm} km`], ["vel", `${vel} km/s`], ["target", mission?.planet_name ?? ""]].map(([k, v]) => (
@@ -357,6 +434,7 @@ export default function Launch() {
           <Bar icon={Fuel} label={t("fuel")} v={telemetry.fuel} testid="telemetry-fuel" />
           <Bar icon={Shield} label={t("hull")} v={telemetry.hull} testid="telemetry-hull" />
           <Bar icon={Zap} label={t("power")} v={telemetry.power} testid="telemetry-power" />
+          <Bar icon={Shield} label={t("shield")} v={telemetry.shield ?? 100} testid="telemetry-shield" />
           <div className="grid grid-cols-3 gap-2 pt-1 font-mono text-[10px] text-slate-400">
             <span className="flex items-center gap-1"><Gauge className="size-3" />TWR {mission?.stats.twr}</span>
             <span>Δv {((mission?.stats.delta_v_ms ?? 0) / 1000).toFixed(1)}</span>
@@ -381,6 +459,7 @@ export default function Launch() {
             </motion.div>
           )}
         </AnimatePresence>
+        {phase === "flight" && <SpaceWeatherPanel compact />}
         {crisis === null && !lastResult && (
           <div className="rounded-xl border border-cyan-500/20 bg-slate-900/60 p-4" data-testid="flight-status">
             <div className="hud-label mb-1">{t("fd")}</div>

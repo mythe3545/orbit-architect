@@ -160,6 +160,7 @@ class Astronaut(BaseModel):
     upgrades: dict[str, int] = {}
     blueprint: Blueprint = Field(default_factory=Blueprint)
     missions_flown: int = 0
+    achievements: list[str] = []
     created_at: datetime = Field(default_factory=_now)
 
 
@@ -168,6 +169,7 @@ class Telemetry(BaseModel):
     fuel: float = 100
     hull: float = 100
     power: float = 100
+    shield: float = 100
 
 
 class ObstacleOptionView(BaseModel):
@@ -177,6 +179,10 @@ class ObstacleOptionView(BaseModel):
 
 class ObstacleView(BaseModel):
     id: str
+    kind: str = "classic"  # classic | FLR | SEP | GST | IPS | CME
+    severity: int = 0
+    value: str = ""
+    event_date: str = ""
     phase: str
     title: str
     description: str
@@ -202,6 +208,39 @@ class StartMissionRequest(BaseModel):
     stack: list[StackItem]
     lang: Lang = "en"
     difficulty: Difficulty = "normal"
+    forced: list[Literal["FLR", "SEP", "GST", "IPS", "CME"]] = []
+
+
+class InjectRequest(BaseModel):
+    type: Literal["FLR", "SEP", "GST", "IPS", "CME"]
+
+
+class DonkiEvent(BaseModel):
+    type: str
+    id: str
+    time: str
+    value: str
+    severity: int
+    link: Optional[str] = None
+    archive: bool = False
+    origin: Literal["live", "recent", "archive"] = "archive"
+
+
+class SpaceWeatherReport(BaseModel):
+    source: Literal["live", "recent", "archive"]
+    fetched_at: str
+    events: list[DonkiEvent]
+    latest: dict[str, DonkiEvent]
+    counts: dict[str, int]
+
+
+class Apod(BaseModel):
+    date: str
+    title: str
+    url: Optional[str] = None
+    hdurl: Optional[str] = None
+    copyright: Optional[str] = None
+    explanation: str = ""
 
 
 class DecisionRequest(BaseModel):
@@ -240,3 +279,5 @@ class Mission(BaseModel):
 class MissionReport(BaseModel):
     mission: Mission
     astronaut: Astronaut
+    new_achievements: list[str] = []
+    achievement_bonus: int = 0
