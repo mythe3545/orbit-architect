@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tansta
 import { useCallback, useSyncExternalStore } from "react";
 import { apiGet, apiPost, apiPut } from "@/lib/api";
 import { useSettings } from "@/lib/settings";
-import type { Apod, Astronaut, Blueprint, Catalog, NasaImage, RocketAnalysis, SpaceWeatherReport, StackItem } from "@/lib/types";
+import type { Apod, Astronaut, Blueprint, Catalog, NasaImage, RocketAnalysis, SpaceWeatherReport, StackItem, WeeklyChallenge } from "@/lib/types";
 
 const KEY = "astro_id";
 const listeners = new Set<() => void>();
@@ -51,6 +51,10 @@ export function useNasaImages(q: string, limit = 1) {
 
 export function useSpaceWeather() {
   return useQuery({ queryKey: ["donki"], queryFn: () => apiGet<SpaceWeatherReport>("/donki/report"), staleTime: 5 * 60_000, refetchInterval: 5 * 60_000 });
+}
+
+export function useWeeklyChallenge(astronautId: string | null) {
+  return useQuery({ queryKey: ["challenge", astronautId], queryFn: () => apiGet<WeeklyChallenge>(`/challenge/weekly?astronaut_id=${astronautId ?? ""}`), staleTime: 5 * 60_000 });
 }
 
 export function useApod() {

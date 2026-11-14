@@ -213,3 +213,12 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-hud-shake, .animate-star-drift, .animate-scan { animation: none !important; }
 }
+
+/* achievement pop-up */
+@keyframes ach-glow { 0%, 100% { box-shadow: 0 0 24px -4px rgba(251,191,36,0.45), inset 0 0 18px rgba(251,191,36,0.08); } 50% { box-shadow: 0 0 56px 4px rgba(251,191,36,0.7), inset 0 0 28px rgba(251,191,36,0.16); } }
+@keyframes ach-spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes ach-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.07); } }
+.ach-glow { animation: ach-glow 1.8s ease-in-out infinite; }
+.ach-pulse { animation: ach-pulse 1.4s ease-in-out infinite; }
+.ach-rays { background: repeating-conic-gradient(from 0deg, rgba(251,191,36,0.16) 0deg 8deg, transparent 8deg 24deg); mask-image: radial-gradient(circle, black 20%, transparent 70%); animation: ach-spin 14s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .ach-glow, .ach-pulse, .ach-rays { animation: none; } }

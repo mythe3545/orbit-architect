@@ -5,7 +5,9 @@ import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { AlertOctagon, CheckCircle2, Fuel, Gauge, Rocket, Shield, Wrench, Zap, Timer, Trophy, Orbit } from "lucide-react";
 import { apiPost, ApiError } from "@/lib/api";
-import { useAnalysis, useAstronaut, useAstronautId, useCatalog, useNasaImages } from "@/lib/hooks";
+import { useAnalysis, useAstronaut, useAstronautId, useCatalog, useNasaImages, useWeeklyChallenge } from "@/lib/hooks";
+import WeeklyChallengeCard from "@/components/WeeklyChallengeCard";
+import AchievementPopup from "@/components/AchievementPopup";
 import type { Decision, Mission, MissionReport, Planet, Telemetry, WeatherKind } from "@/lib/types";
 import { RocketGraphic } from "@/components/RocketGraphic";
 import FlightScene, { type FlightEvent } from "@/components/FlightScene";
@@ -155,6 +157,7 @@ export default function Launch() {
   const nav = useNavigate();
   const qc = useQueryClient();
   const id = useAstronautId();
+  const { data: weekly } = useWeeklyChallenge(id);
   const { data: astro } = useAstronaut();
   const { data: catalog } = useCatalog();
   const parts = useMemo(() => Object.fromEntries((catalog?.parts ?? []).map((p) => [p.id, p])), [catalog]);
@@ -172,6 +175,10 @@ export default function Launch() {
   const [report, setReport] = useState<MissionReport | null>(null);
   const completing = useRef(false);
   const [forced, setForced] = useState<WeatherKind[]>([]);
+  const [challengeArmed, setChallengeArmed] = useState(false);
+  const [popup, setPopup] = useState<string[]>([]);
+  const closePopup = useCallback(() => setPopup([]), []);
+  const challengeOn = challengeArmed && !!weekly && !weekly.completed && weekly.planet_id === planetId;
   const [cps, setCps] = useState<number[]>([]);
 
   const planet = catalog?.planets.find((p) => p.id === planetId);
@@ -187,8 +194,8 @@ export default function Launch() {
   const telemetry: Telemetry = lastResult?.telemetry ?? decisions.at(-1)?.telemetry ?? mission?.telemetry ?? { fuel: 100, hull: 100, power: 100, shield: 100 };
 
   const startM = useMutation({
-    mutationFn: () => apiPost<Mission>("/missions", { astronaut_id: id, planet_id: planetId, rocket_label: astro?.blueprint.label, stack, lang: settings.lang, difficulty: settings.difficulty, forced }),
-    onSuccess: (m) => { setMission(m); setCps(baseCheckpoints(m)); setForced([]); setDecisions([]); setProgress(0); setCrisis(null); setLastResult(null); setReport(null); completing.current = false; setCount(5); setPhase("countdown"); },
+    mutationFn: () => apiPost<Mission>("/missions", { astronaut_id: id, planet_id: planetId, rocket_label: astro?.blueprint.label, stack, lang: settings.lang, difficulty: settings.difficulty, forced, challenge: challengeOn }),
+    onSuccess: (m) => { setChallengeArmed(false); setMission(m); setCps(baseCheckpoints(m)); setForced([]); setDecisions([]); setProgress(0); setCrisis(null); setLastResult(null); setReport(null); completing.current = false; setCount(5); setPhase("countdown"); },
     onError: (e) => toast.error(e instanceof ApiError ? String((e.body as { detail?: string })?.detail ?? t("toast.scrub")) : t("toast.scrub")),
   });
   const decideM = useMutation({
@@ -217,7 +224,7 @@ export default function Launch() {
   const activeWeather = crisis !== null ? mission?.obstacles[crisis]?.kind : null;
   const completeM = useMutation({
     mutationFn: () => apiPost<MissionReport>(`/missions/${mission!.id}/complete`),
-    onSuccess: (r) => { sfx.stopAll(); if (r.mission.status === "fail") sfx.fail(); else sfx.success(); setReport(r); qc.setQueryData(["astronaut", r.astronaut.id], r.astronaut); qc.invalidateQueries({ queryKey: ["missions"] }); setPhase("report"); },
+    onSuccess: (r) => { sfx.stopAll(); if (r.mission.status === "fail") sfx.fail(); else sfx.success(); setReport(r); setPopup(r.new_achievements); qc.setQueryData(["astronaut", r.astronaut.id], r.astronaut); qc.invalidateQueries({ queryKey: ["missions"] }); qc.invalidateQueries({ queryKey: ["challenge"] }); setPhase("report"); },
     onError: () => { completing.current = false; toast.error(t("toast.report")); },
   });
 
@@ -285,6 +292,12 @@ export default function Launch() {
             <Link to="/builder" className={buttonVariants({ variant: "outline", size: "sm" })}>{t("fixBuilder")}</Link>
           </div>
         )}
+        {weekly && (
+          <div className="mb-5">
+            <WeeklyChallengeCard ch={weekly} planetName={catalog.planets.find((p) => p.id === weekly.planet_id)?.name ?? weekly.planet_id} armed={challengeOn}
+              onArm={() => { sfx.click(); if (challengeOn) { setChallengeArmed(false); return; } setPlanetId(weekly.planet_id); setChallengeArmed(true); }} />
+          </div>
+        )}
         <div className="mb-5"><SpaceWeatherPanel /></div>
         {forced.length > 0 && (
           <div className="mb-4 flex flex-wrap gap-2 font-mono text-[11px]" data-testid="forced-events">
@@ -320,6 +333,7 @@ export default function Launch() {
     const C = 2 * Math.PI * 70;
     return (
       <div className="px-4 lg:px-8 py-8 max-w-5xl mx-auto" data-testid="mission-report">
+        {popup.length > 0 && <AchievementPopup ids={popup} onDone={closePopup} />}
         <p className="hud-label mb-2">{t("report.kicker")} · {m.rocket_label} → {m.planet_name}</p>
         <div className="grid md:grid-cols-[260px_1fr] gap-6 items-center">
           <div className="relative size-[220px] mx-auto">
@@ -347,6 +361,11 @@ export default function Launch() {
                 </div>
               ))}
             </div>
+            {report.challenge_bonus > 0 && (
+              <div className="mt-3 flex items-center justify-between rounded-lg border border-amber-300/60 bg-amber-300/10 px-3 py-2 ach-glow" data-testid="report-challenge-bonus">
+                <span className="hud-label text-amber-300">{t("weekly.done")}</span><span className="font-mono text-xl text-amber-200">+{report.challenge_bonus}</span>
+              </div>
+            )}
             <div className="flex flex-wrap gap-2 mt-6">
               <Button onClick={() => setPhase("select")} data-testid="fly-again-button"><Orbit className="size-4" /> {t("newMission")}</Button>
               <Button variant="outline" onClick={() => nav("/builder")} data-testid="report-modify-rocket-button"><Wrench className="size-4" /> {t("modifyRocket")}</Button>

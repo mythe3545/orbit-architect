@@ -8,6 +8,7 @@ from data import i18n
 from data.achievements import ACHIEVEMENTS, evaluate
 from data.nasa import OBSTACLE_BY_ID, OBSTACLES, PLANET_BY_ID
 from lib import donki
+from lib.challenge import weekly
 from lib.db import db
 from lib.rocket import analyze
 from models.schemas import (Decision, DecisionRequest, Mission, MissionReport, ObstacleOptionView, ObstacleView,
@@ -70,7 +71,15 @@ async def start_mission(body: StartMissionRequest):
     # launch + in-flight crises come from live NASA DONKI space weather; arrival stays planet-specific
     report = await donki.fetch_report()
     n_weather = min(len(classic) - 1, 5)
-    events = donki.pick_events(report, n_weather, body.difficulty, body.forced)
+    ch = None
+    if body.challenge:
+        ch = await weekly()
+        if ch["planet_id"] != planet["id"]:
+            raise HTTPException(status_code=400, detail="This week's challenge targets a different destination")
+        rest = donki.pick_events(report, n_weather, body.difficulty, [f for f in body.forced if f != ch["event"]["type"]])
+        events = [ch["event"]] + [e for e in rest if e["type"] != ch["event"]["type"]][: n_weather - 1]
+    else:
+        events = donki.pick_events(report, n_weather, body.difficulty, body.forced)
     weather = [donki.build_obstacle(e, body.lang, body.difficulty, "launch" if i == 0 else "transit") for i, e in enumerate(events)]
     fill = [_tr(i, body.lang) for i in classic[1:-1]][: max(0, len(classic) - 1 - len(weather))]
     obs = weather + fill + [_tr(classic[-1], body.lang)]
@@ -78,7 +87,7 @@ async def start_mission(body: StartMissionRequest):
     doc = {
         "id": str(uuid.uuid4()), "astronaut_id": a.id, "planet_id": planet["id"],
         "planet_name": i18n.PLANETS.get(body.lang, {}).get(planet["id"], (planet["name"],))[0],
-        "lang": body.lang, "difficulty": body.difficulty,
+        "lang": body.lang, "difficulty": body.difficulty, "challenge_week": ch["week"] if ch else None,
         "rocket_label": body.rocket_label, "stats": analysis.stats.model_dump(), "readiness": round(readiness, 3),
         "decision_seconds": 15 + 3 * a.upgrades.get("nav_ai", 0) + DIFF_SECONDS[body.difficulty], "obstacle_ids": [o["id"] for o in obs], "option_orders": orders, "obs_full": obs,
         "obstacles": [_view(o, od).model_dump() for o, od in zip(obs, orders)], "decisions": [], "telemetry": Telemetry().model_dump(),
@@ -185,10 +194,18 @@ async def complete(mission_id: str):
     new_ach = [x for x in evaluate(m, adoc, explored) if x not in a.achievements]
     bonus = sum(ACHIEVEMENTS[x] for x in new_ach)
     upd: dict = {"$inc": {"points": pb.total + bonus, "total_points_earned": pb.total + bonus, "missions_flown": 1}}
+    ch_bonus = 0
+    wk = m.get("challenge_week")
+    if wk and status == "success" and wk not in (adoc.get("challenges_done") or []):
+        ch = await weekly()
+        ch_bonus = round(ch["bonus"] * mult) if ch["week"] == wk else 0
+        upd["$inc"]["points"] += ch_bonus
+        upd["$inc"]["total_points_earned"] += ch_bonus
+        upd["$addToSet"] = {"challenges_done": wk}
     if new_ach:
         upd["$push"] = {"achievements": {"$each": new_ach}}
     if status != "fail":
-        upd["$addToSet"] = {"explored": planet["id"]}
+        upd.setdefault("$addToSet", {})["explored"] = planet["id"]
     await db.astronauts.update_one({"id": a.id}, upd)
     return MissionReport(mission=Mission(**(await _get(mission_id))), astronaut=await get_astronaut_or_404(a.id),
-                         new_achievements=new_ach, achievement_bonus=bonus)
+                         new_achievements=new_ach, achievement_bonus=bonus, challenge_bonus=ch_bonus)

@@ -41,3 +41,9 @@ Physics/guide: backend/lib/rocket.py (single source of truth).
 - Titles by achievement count (frontend/src/lib/achievements.ts): 0 Space Cadet, 2 Orbital Pilot, 4 Mission Commander, 7 Flight Director, 10 Space Legend. Shown in the HUD + /achievements page.
 - Builder library: 2-column tiles, wrapped category chips, no horizontal scroll. APOD background opacity 0.42.
 - Flight transit: milky-way band, twinkling stars, sun + lens flare, Earth atmosphere/clouds/terminator, planet rim light, CME plasma shock rings.
+
+## v5: Weekly challenge + achievement pop-up
+- GET /api/challenge/weekly?astronaut_id= → WeeklyChallenge {week (ISO, e.g. 2026-W46), event (strongest DONKI event of last 7 days by severity; falls back to strongest available, not frozen), planet_id (rotation moon/mars/venus/mercury/jupiter/saturn by week number), bonus = 200 + 100*severity, this_week, completed}. Real this-week events are frozen per week in Mongo `challenges`.
+- POST /api/missions with challenge=true: planet must match (else 400); the challenge event becomes the launch crisis. Mission.challenge_week stored. On complete with status success and the week not yet in Astronaut.challenges_done → bonus × difficulty multiplier, MissionReport.challenge_bonus.
+- Launch page: WeeklyChallengeCard (accept → selects planet + arms). Report: AchievementPopup (glowing modal, sfx.achievement chime, auto-advances 3.2s or on tap) for each new achievement; challenge bonus row.
+- NASA_API_KEY in backend/.env (falls back to DEMO_KEY) drives live DONKI + APOD.

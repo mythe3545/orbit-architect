@@ -29,6 +29,14 @@ def _key() -> str:
     return os.environ.get("NASA_API_KEY", "DEMO_KEY")
 
 
+def _safe(err: Exception) -> str:
+    """Error text with the API key masked (never log secrets)."""
+    return str(err).replace(_key(), "***").split("\n")[0]
+
+
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
+
 # Real historical events (May & Oct 2024 solar maximum) used when DONKI is unreachable.
 ARCHIVE = [
     {"type": "FLR", "id": "2024-10-03T11:58:00-FLR-001", "time": "2024-10-03T12:18Z", "value": "X9.0", "severity": 4, "link": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/FLR/33664/-1"},
@@ -82,7 +90,7 @@ async def fetch_report() -> dict:
         empty = []
         for t, res in zip(TYPES, today):
             if isinstance(res, Exception):
-                logger.warning("DONKI live %s failed: %s", t, res)
+                logger.warning("DONKI live %s failed: %s", t, _safe(res))
                 empty.append(t)
                 continue
             ok += 1
@@ -95,7 +103,7 @@ async def fetch_report() -> dict:
             recent = await asyncio.gather(*(one(t, end - timedelta(days=30)) for t in empty), return_exceptions=True)
             for t, res in zip(empty, recent):
                 if isinstance(res, Exception):
-                    logger.warning("DONKI 30-day %s failed: %s", t, res)
+                    logger.warning("DONKI 30-day %s failed: %s", t, _safe(res))
                     continue
                 ok += 1
                 events += [dict(e, origin="recent") for e in res[1]]
@@ -120,15 +128,24 @@ async def fetch_apod() -> dict | None:
     if _apod["date"] == day and (_apod["data"] or time.time() - _apod.get("at", 0) < 300):
         return _apod["data"]
     try:
+        d, url = {}, None
         async with httpx.AsyncClient(timeout=10) as c:
-            r = await c.get(f"{BASE}/planetary/apod", params={"api_key": _key(), "thumbs": "true"})
-            r.raise_for_status()
-            d = r.json()
-        url = d.get("url") if d.get("media_type") == "image" else d.get("thumbnail_url")
+            # NASA sometimes serves a placeholder logo for today's APOD; step back to the latest real picture
+            for back in range(5):
+                r = await c.get(f"{BASE}/planetary/apod", params={"api_key": _key(), "date": (today_utc() - timedelta(days=back)).isoformat()})
+                if r.status_code != 200:
+                    continue
+                d = r.json()
+                url = d.get("url") if d.get("media_type") == "image" else d.get("thumbnail_url")
+                if url and "nasa-logo" not in url and d.get("title") != "NASA Science":
+                    break
+                url = None
+        if not url:
+            raise ValueError("no valid APOD image in the last 5 days")
         data = {"date": d.get("date", day), "title": d.get("title", ""), "url": url, "hdurl": d.get("hdurl"), "copyright": (d.get("copyright") or "").strip() or None,
                 "explanation": d.get("explanation", "")}
     except Exception as exc:
-        logger.warning("APOD fetch failed: %s", exc)
+        logger.warning("APOD fetch failed: %s", _safe(exc))
         data = None
     _apod.update(date=day, data=data, at=time.time())
     return data

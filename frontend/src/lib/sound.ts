@@ -115,5 +115,10 @@ export const sfx = {
   bad: () => tone(150, 0.4, "sawtooth", 0.12, 0, 90),
   success: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.5, "triangle", 0.2, i * 0.13)),
   fail: () => tone(440, 1.2, "sawtooth", 0.12, 0, 90),
+  achievement: () => {
+    [784, 988, 1175, 1568].forEach((f, i) => tone(f, 0.35, "sine", 0.22, i * 0.08));
+    [2637, 3136, 3520, 2794, 3951].forEach((f, i) => tone(f, 0.18, "triangle", 0.06, 0.35 + i * 0.06));
+    tone(523, 1.1, "triangle", 0.12, 0.3);
+  },
   stopAll() { this.alarmStop(); this.rumbleStop(); },
 };

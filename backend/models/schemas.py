@@ -161,6 +161,7 @@ class Astronaut(BaseModel):
     blueprint: Blueprint = Field(default_factory=Blueprint)
     missions_flown: int = 0
     achievements: list[str] = []
+    challenges_done: list[str] = []
     created_at: datetime = Field(default_factory=_now)
 
 
@@ -209,6 +210,7 @@ class StartMissionRequest(BaseModel):
     lang: Lang = "en"
     difficulty: Difficulty = "normal"
     forced: list[Literal["FLR", "SEP", "GST", "IPS", "CME"]] = []
+    challenge: bool = False
 
 
 class InjectRequest(BaseModel):
@@ -273,6 +275,7 @@ class Mission(BaseModel):
     first_visit: bool = False
     lang: Lang = "en"
     difficulty: Difficulty = "normal"
+    challenge_week: Optional[str] = None
     created_at: datetime
 
 
@@ -280,4 +283,14 @@ class MissionReport(BaseModel):
     mission: Mission
     astronaut: Astronaut
     new_achievements: list[str] = []
+    challenge_bonus: int = 0
     achievement_bonus: int = 0
+
+
+class WeeklyChallenge(BaseModel):
+    week: str
+    event: DonkiEvent
+    planet_id: str
+    bonus: int
+    this_week: bool
+    completed: bool = False

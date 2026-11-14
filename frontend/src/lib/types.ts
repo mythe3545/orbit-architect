@@ -32,7 +32,7 @@ export interface Blueprint { label: string; stack: StackItem[] }
 export interface Astronaut {
   id: string; full_name: string; callsign: string; agency_id: string; specialization: string; nationality: string;
   points: number; total_points_earned: number; explored: string[]; upgrades: Record<string, number>;
-  blueprint: Blueprint; missions_flown: number; achievements: string[]; created_at: string;
+  blueprint: Blueprint; missions_flown: number; achievements: string[]; challenges_done: string[]; created_at: string;
 }
 export interface EnrollRequest {
   full_name: string; callsign: string; agency_id: string; specialization: string; nationality: string; pin: string;
@@ -53,9 +53,10 @@ export interface Mission {
   id: string; astronaut_id: string; planet_id: string; planet_name: string; rocket_label: string; stats: RocketStats;
   readiness: number; decision_seconds: number; obstacles: ObstacleView[]; decisions: Decision[]; telemetry: Telemetry;
   status: "in_flight" | "success" | "partial" | "fail"; success_pct: number; points: PointsBreakdown;
-  first_visit: boolean; lang: "en" | "tr" | "de"; difficulty: "easy" | "normal" | "hard"; created_at: string;
+  first_visit: boolean; lang: "en" | "tr" | "de"; difficulty: "easy" | "normal" | "hard"; challenge_week: string | null; created_at: string;
 }
-export interface MissionReport { mission: Mission; astronaut: Astronaut; new_achievements: string[]; achievement_bonus: number }
+export interface MissionReport { mission: Mission; astronaut: Astronaut; new_achievements: string[]; achievement_bonus: number; challenge_bonus: number }
+export interface WeeklyChallenge { week: string; event: DonkiEvent; planet_id: string; bonus: number; this_week: boolean; completed: boolean }
 export interface DonkiEvent { type: WeatherKind; id: string; time: string; value: string; severity: number; link: string | null; archive: boolean; origin: "live" | "recent" | "archive" }
 export interface SpaceWeatherReport {
   source: "live" | "recent" | "archive"; fetched_at: string; events: DonkiEvent[];

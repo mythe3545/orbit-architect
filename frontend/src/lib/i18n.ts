@@ -4,7 +4,7 @@ import { useSettings, type Lang } from "@/lib/settings";
 type Dict = Record<string, string>;
 
 const en: Dict = {
-  "sw.title": "Space Weather · DONKI Live Report", "sw.live": "LIVE FEED", "sw.recent": "30-DAY ARCHIVE", "sw.archive": "ARCHIVE REPORT", "o.live": "TODAY", "o.recent": "30 DAYS", "o.archive": "2024", "nav.ach": "Achievements", "sw.updated": "Updated {t} UTC",
+  "sw.title": "Space Weather · DONKI Live Report", "sw.live": "LIVE FEED", "sw.recent": "30-DAY ARCHIVE", "sw.archive": "ARCHIVE REPORT", "o.live": "TODAY", "o.recent": "30 DAYS", "o.archive": "2024", "nav.ach": "Achievements", "weekly.done": "Weekly challenge complete", "sw.updated": "Updated {t} UTC",
   "sw.active": "ACTIVE", "sw.archiveNote": "No event today: showing the latest recorded NASA events.", "sw.src": "Source: NASA DONKI (api.nasa.gov)",
   "sw.inFlight": "These real events become your in-flight crises", "k.FLR": "Solar Flare", "k.SEP": "Solar Energetic Particles", "k.GST": "Geomagnetic Storm",
   "k.IPS": "Interplanetary Shock", "k.CME": "Coronal Mass Ejection", "m.FLR": "Radiation alarm", "m.SEP": "Shield drain", "m.GST": "Power regulator",
@@ -76,7 +76,7 @@ const en: Dict = {
 };
 
 const tr: Dict = {
-  "sw.title": "Uzay Hava Durumu · DONKI Canlı Raporu", "sw.live": "CANLI AKIŞ", "sw.recent": "SON 30 GÜN", "sw.archive": "ARŞİV RAPORU", "o.live": "BUGÜN", "o.recent": "30 GÜN", "o.archive": "2024", "nav.ach": "Başarımlar", "sw.updated": "Güncellendi {t} UTC",
+  "sw.title": "Uzay Hava Durumu · DONKI Canlı Raporu", "sw.live": "CANLI AKIŞ", "sw.recent": "SON 30 GÜN", "sw.archive": "ARŞİV RAPORU", "o.live": "BUGÜN", "o.recent": "30 GÜN", "o.archive": "2024", "nav.ach": "Başarımlar", "weekly.done": "Haftalık görev tamamlandı", "sw.updated": "Güncellendi {t} UTC",
   "sw.active": "AKTİF", "sw.archiveNote": "Bugün yeni olay yok: en son kaydedilen NASA olayları gösteriliyor.", "sw.src": "Kaynak: NASA DONKI (api.nasa.gov)",
   "sw.inFlight": "Bu gerçek olaylar uçuştaki krizlerin olur", "k.FLR": "Güneş Patlaması", "k.SEP": "Güneş Enerjili Parçacıklar", "k.GST": "Jeomanyetik Fırtına",
   "k.IPS": "Gezegenlerarası Şok", "k.CME": "Koronal Kütle Atımı", "m.FLR": "Radyasyon alarmı", "m.SEP": "Kalkan aşınması", "m.GST": "Güç regülatörü",
@@ -148,7 +148,7 @@ const tr: Dict = {
 };
 
 const de: Dict = {
-  "sw.title": "Weltraumwetter · DONKI-Livebericht", "sw.live": "LIVE-FEED", "sw.recent": "30-TAGE-ARCHIV", "sw.archive": "ARCHIVBERICHT", "o.live": "HEUTE", "o.recent": "30 TAGE", "o.archive": "2024", "nav.ach": "Erfolge", "sw.updated": "Aktualisiert {t} UTC",
+  "sw.title": "Weltraumwetter · DONKI-Livebericht", "sw.live": "LIVE-FEED", "sw.recent": "30-TAGE-ARCHIV", "sw.archive": "ARCHIVBERICHT", "o.live": "HEUTE", "o.recent": "30 TAGE", "o.archive": "2024", "nav.ach": "Erfolge", "weekly.done": "Wochen-Challenge geschafft", "sw.updated": "Aktualisiert {t} UTC",
   "sw.active": "AKTIV", "sw.archiveNote": "Heute kein Ereignis: die zuletzt erfassten NASA-Ereignisse.", "sw.src": "Quelle: NASA DONKI (api.nasa.gov)",
   "sw.inFlight": "Diese echten Ereignisse werden zu deinen Krisen im Flug", "k.FLR": "Sonneneruption", "k.SEP": "Energiereiche Sonnenteilchen", "k.GST": "Geomagnetischer Sturm",
   "k.IPS": "Interplanetarer Schock", "k.CME": "Koronaler Massenauswurf", "m.FLR": "Strahlungsalarm", "m.SEP": "Schildverlust", "m.GST": "Leistungsregler",
