@@ -13,7 +13,7 @@ export interface FleetRocket {
 export interface Planet {
   id: string; name: string; distance_mkm: number; gravity_ms2: number; mean_temp_c: number; day_hours: number;
   moons: number; atmosphere: string; required_dv_ms: number; reward: number; explore_bonus: number;
-  obstacle_count: number; image_query: string; fact: string;
+  obstacle_count: number; image_query: string; image_url?: string | null; fact: string;
 }
 export interface Upgrade { id: string; name: string; description: string; base_cost: number; max_level: number }
 export interface Catalog { categories: Category[]; parts: Part[]; rockets: FleetRocket[]; planets: Planet[]; upgrades: Upgrade[] }

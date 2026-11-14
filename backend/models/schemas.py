@@ -65,6 +65,7 @@ class Planet(BaseModel):
     explore_bonus: int
     obstacle_count: int
     image_query: str
+    image_url: Optional[str] = None
     fact: str
 
 

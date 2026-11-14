@@ -113,7 +113,7 @@ PLANETS = [
      "obstacle_count": 3, "image_query": "International Space Station", "fact": "The ISS orbits Earth every 92 minutes at about 28,000 km/h."},
     {"id": "moon", "name": "Moon", "distance_mkm": 0.384, "gravity_ms2": 1.62, "mean_temp_c": -20, "day_hours": 708.7, "moons": 0,
      "atmosphere": "Exosphere (negligible)", "required_dv_ms": 12000, "reward": 250, "explore_bonus": 150, "obstacle_count": 3,
-     "image_query": "Moon surface Apollo", "fact": "Twelve astronauts walked on the Moon between 1969 and 1972."},
+     "image_query": "Moon surface Apollo", "image_url": "https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e000868/GSFC_20171208_Archive_e000868~medium.jpg", "fact": "Twelve astronauts walked on the Moon between 1969 and 1972."},
     {"id": "venus", "name": "Venus", "distance_mkm": 41.4, "gravity_ms2": 8.87, "mean_temp_c": 464, "day_hours": 2802.0, "moons": 0,
      "atmosphere": "96.5% CO2, 92 bar", "required_dv_ms": 12500, "reward": 380, "explore_bonus": 220, "obstacle_count": 4,
      "image_query": "Venus planet Magellan", "fact": "Venus is the hottest planet; its surface pressure is 92 times Earth's."},

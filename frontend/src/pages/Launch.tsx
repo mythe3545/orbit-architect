@@ -13,9 +13,9 @@ import { cn } from "@/lib/utils";
 
 type Phase = "select" | "countdown" | "flight" | "report";
 
-function PlanetImage({ q, className }: { q: string; className?: string }) {
+function PlanetImage({ q, fixed, className }: { q: string; fixed?: string | null; className?: string }) {
   const { data } = useNasaImages(q, 1);
-  const url = data?.[0]?.url;
+  const url = fixed || data?.[0]?.url;
   return url ? <img src={url} alt={q} className={cn("object-cover", className)} loading="lazy" /> : <div className={cn("bg-gradient-to-br from-slate-700 to-slate-950", className)} />;
 }
 
@@ -26,7 +26,7 @@ function PlanetCard({ planet, dv, selected, explored, onSelect }: { planet: Plan
       className={cn("text-left rounded-xl border overflow-hidden bg-slate-900/60 transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5",
         selected ? "border-cyan-300 shadow-[0_0_20px_rgba(0,229,255,0.25)]" : "border-slate-800 hover:border-cyan-500/50")}>
       <div className="relative h-28">
-        <PlanetImage q={planet.image_query} className="absolute inset-0 size-full" />
+        <PlanetImage q={planet.image_query} fixed={planet.image_url} className="absolute inset-0 size-full" />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent" />
         {explored && <span className="absolute top-2 right-2 font-mono text-[9px] px-2 py-0.5 rounded-full bg-emerald-400/20 border border-emerald-400/50 text-emerald-200">EXPLORED</span>}
         <div className="absolute bottom-2 left-3 font-heading text-lg text-white">{planet.name}</div>
@@ -314,7 +314,7 @@ export default function Launch() {
           })}
         </svg>
         <div className="absolute overflow-hidden rounded-full" style={{ left: `${(P2[0] - 38) / 7}%`, top: `${(P2[1] - 38) / 4}%`, width: `${76 / 7}%`, aspectRatio: "1" }}>
-          {planet && <PlanetImage q={planet.image_query} className="size-full" />}
+          {planet && <PlanetImage q={planet.image_query} fixed={planet.image_url} className="size-full" />}
         </div>
         {phase === "flight" && (
           <div className="absolute -translate-x-1/2 -translate-y-1/2 transition-[left,top] duration-100 ease-linear" style={{ left: `${rx / 7}%`, top: `${ry / 4}%`, transform: `translate(-50%,-50%) rotate(${angle}deg)` }} data-testid="flight-rocket">
