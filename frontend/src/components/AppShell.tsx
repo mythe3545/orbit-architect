@@ -1,17 +1,22 @@
 import { NavLink, Navigate, Outlet, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { Hammer, Rocket, Warehouse, IdCard, LogOut, Star } from "lucide-react";
+import { Hammer, Rocket, Warehouse, IdCard, LogOut, Star, Settings as Cog } from "lucide-react";
+import { useT } from "@/lib/i18n";
+import { useSettings } from "@/lib/settings";
 import { setAstronautId, useAstronaut, useAstronautId } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { to: "/builder", label: "Builder", icon: Hammer },
-  { to: "/launch", label: "Launch", icon: Rocket },
-  { to: "/hangar", label: "Fleet & Upgrades", icon: Warehouse },
-  { to: "/dossier", label: "Dossier", icon: IdCard },
+  { to: "/builder", label: "nav.builder", icon: Hammer },
+  { to: "/launch", label: "nav.launch", icon: Rocket },
+  { to: "/hangar", label: "nav.hangar", icon: Warehouse },
+  { to: "/dossier", label: "nav.dossier", icon: IdCard },
+  { to: "/settings", label: "nav.settings", icon: Cog },
 ];
 
 export default function AppShell() {
+  const t = useT();
+  const { lang } = useSettings();
   const id = useAstronautId();
   const { data: astro } = useAstronaut();
   const qc = useQueryClient();
@@ -48,7 +53,7 @@ export default function AppShell() {
                 }
               >
                 <Icon className="size-4" />
-                <span className="hidden md:inline">{label}</span>
+                <span className="hidden md:inline">{t(label)}</span>
               </NavLink>
             ))}
           </nav>
@@ -59,7 +64,7 @@ export default function AppShell() {
               <span className="font-mono text-[10px] text-amber-300/70 hidden sm:inline">PTS</span>
             </div>
             <div className="hidden lg:flex flex-col leading-tight text-right" data-testid="hud-callsign">
-              <span className="hud-label">Callsign</span>
+              <span className="hud-label">{t("callsign")}</span>
               <span className="font-mono text-sm text-white">{astro?.callsign ?? "···"}</span>
             </div>
             <button
@@ -77,8 +82,8 @@ export default function AppShell() {
         <Outlet />
       </main>
       <footer className="border-t border-cyan-500/10 px-4 lg:px-6 h-8 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">
-        <span>Data: NASA / NSSDCA fact sheets · NASA Image Library</span>
-        <span className="hidden sm:inline" data-testid="hud-status">Link nominal · {astro?.specialization ?? "Astronaut"}</span>
+        <span>{t("footer.data")}</span>
+        <span className="hidden sm:inline" data-testid="hud-status">{t("footer.link")} · {astro ? t(`spec.${astro.specialization}`) : ""} · {lang.toUpperCase()}</span>
       </footer>
     </div>
   );

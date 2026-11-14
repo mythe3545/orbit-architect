@@ -4,6 +4,7 @@ import Builder from "@/pages/Builder";
 import Launch from "@/pages/Launch";
 import Hangar from "@/pages/Hangar";
 import Dossier from "@/pages/Dossier";
+import SettingsPage from "@/pages/Settings";
 import AppShell from "@/components/AppShell";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -18,6 +19,7 @@ export default function App() {
           <Route path="/launch" element={<Launch />} />
           <Route path="/hangar" element={<Hangar />} />
           <Route path="/dossier" element={<Dossier />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

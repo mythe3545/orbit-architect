@@ -52,6 +52,6 @@ export interface Mission {
   id: string; astronaut_id: string; planet_id: string; planet_name: string; rocket_label: string; stats: RocketStats;
   readiness: number; decision_seconds: number; obstacles: ObstacleView[]; decisions: Decision[]; telemetry: Telemetry;
   status: "in_flight" | "success" | "partial" | "fail"; success_pct: number; points: PointsBreakdown;
-  first_visit: boolean; created_at: string;
+  first_visit: boolean; lang: "en" | "tr" | "de"; difficulty: "easy" | "normal" | "hard"; created_at: string;
 }
 export interface MissionReport { mission: Mission; astronaut: Astronaut }

@@ -111,9 +111,14 @@ class GuideIssue(BaseModel):
     alternatives: list[str] = []
 
 
+Lang = Literal["en", "tr", "de"]
+Difficulty = Literal["easy", "normal", "hard"]
+
+
 class AnalyzeRequest(BaseModel):
     stack: list[StackItem]
     astronaut_id: Optional[str] = None
+    lang: Lang = "en"
 
 
 class RocketAnalysis(BaseModel):
@@ -195,6 +200,8 @@ class StartMissionRequest(BaseModel):
     planet_id: str
     rocket_label: str = "Custom Rocket"
     stack: list[StackItem]
+    lang: Lang = "en"
+    difficulty: Difficulty = "normal"
 
 
 class DecisionRequest(BaseModel):
@@ -225,6 +232,8 @@ class Mission(BaseModel):
     success_pct: int = 0
     points: PointsBreakdown = Field(default_factory=PointsBreakdown)
     first_visit: bool = False
+    lang: Lang = "en"
+    difficulty: Difficulty = "normal"
     created_at: datetime
 
 

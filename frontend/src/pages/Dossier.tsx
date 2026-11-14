@@ -6,6 +6,7 @@ import type { Mission } from "@/lib/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 const STATUS_CLS: Record<string, string> = {
   success: "text-emerald-300 border-emerald-400/40",
@@ -15,6 +16,7 @@ const STATUS_CLS: Record<string, string> = {
 };
 
 export default function Dossier() {
+  const t = useT();
   const id = useAstronautId();
   const { data: astro } = useAstronaut();
   const { data: catalog } = useCatalog();
@@ -27,23 +29,23 @@ export default function Dossier() {
 
   return (
     <div className="px-4 lg:px-8 py-6 max-w-[1300px] mx-auto">
-      <p className="hud-label mb-1">Astronaut flight dossier</p>
+      <p className="hud-label mb-1">{t("dossier.kicker")}</p>
       <div className="grid lg:grid-cols-[360px_1fr] gap-6 mt-2">
         <div className="space-y-4">
           <div className="rounded-xl border border-cyan-500/25 bg-slate-900/70 p-5 hud-corners hud-glow" data-testid="dossier-profile">
             <div className="font-heading text-3xl font-bold text-white tracking-tight" data-testid="dossier-callsign">{astro?.callsign ?? "—"}</div>
             <div className="text-slate-300">{astro?.full_name}</div>
             <div className="grid grid-cols-2 gap-y-2 gap-x-4 mt-4 font-mono text-xs">
-              <span className="text-slate-500">Agency ID</span><span className="text-white">{astro?.agency_id}</span>
-              <span className="text-slate-500">Specialization</span><span className="text-white">{astro?.specialization}</span>
-              <span className="text-slate-500">Nationality</span><span className="text-white">{astro?.nationality || "—"}</span>
-              <span className="text-slate-500">Missions flown</span><span className="text-white" data-testid="dossier-missions-flown">{astro?.missions_flown ?? 0}</span>
-              <span className="text-slate-500">Points</span><span className="text-amber-200" data-testid="dossier-points">{astro?.points ?? 0}</span>
-              <span className="text-slate-500">Lifetime</span><span className="text-amber-200">{astro?.total_points_earned ?? 0}</span>
+              <span className="text-slate-500">{t("agency")}</span><span className="text-white">{astro?.agency_id}</span>
+              <span className="text-slate-500">{t("spec")}</span><span className="text-white">{astro ? t(`spec.${astro.specialization}`) : ""}</span>
+              <span className="text-slate-500">{t("nat")}</span><span className="text-white">{astro?.nationality || "—"}</span>
+              <span className="text-slate-500">{t("flown")}</span><span className="text-white" data-testid="dossier-missions-flown">{astro?.missions_flown ?? 0}</span>
+              <span className="text-slate-500">{t("points")}</span><span className="text-amber-200" data-testid="dossier-points">{astro?.points ?? 0}</span>
+              <span className="text-slate-500">{t("lifetimeShort")}</span><span className="text-amber-200">{astro?.total_points_earned ?? 0}</span>
             </div>
           </div>
           <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5" data-testid="dossier-explored">
-            <div className="hud-label mb-3">Celestial bodies explored · {astro?.explored.length ?? 0}/{catalog?.planets.length ?? 0}</div>
+            <div className="hud-label mb-3">{t("exploredBodies", { a: astro?.explored.length ?? 0, b: catalog?.planets.length ?? 0 })}</div>
             <div className="flex flex-wrap gap-2">
               {catalog?.planets.map((p) => {
                 const on = astro?.explored.includes(p.id);
@@ -54,15 +56,15 @@ export default function Dossier() {
         </div>
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 min-w-0" data-testid="mission-log">
           <div className="flex items-center justify-between mb-3">
-            <span className="hud-label">Mission log</span>
-            <Link to="/launch" className={buttonVariants({ size: "sm" })} data-testid="dossier-new-mission">New mission</Link>
+            <span className="hud-label">{t("log")}</span>
+            <Link to="/launch" className={buttonVariants({ size: "sm" })} data-testid="dossier-new-mission">{t("newMission")}</Link>
           </div>
-          {isError ? <p className="text-sm text-slate-500">Mission log unavailable.</p> : done.length === 0 ? (
-            <p className="text-sm text-slate-400" data-testid="mission-log-empty">No missions flown yet. Build a rocket and launch your first one.</p>
+          {isError ? <p className="text-sm text-slate-500">{t("logNA")}</p> : done.length === 0 ? (
+            <p className="text-sm text-slate-400" data-testid="mission-log-empty">{t("logEmpty")}</p>
           ) : (
             <Table>
               <TableHeader>
-                <TableRow><TableHead>Date</TableHead><TableHead>Rocket</TableHead><TableHead>Destination</TableHead><TableHead>Result</TableHead><TableHead className="text-right">Points</TableHead></TableRow>
+                <TableRow><TableHead>{t("th.date")}</TableHead><TableHead>{t("th.rocket")}</TableHead><TableHead>{t("th.dest")}</TableHead><TableHead>{t("th.result")}</TableHead><TableHead className="text-right">{t("th.points")}</TableHead></TableRow>
               </TableHeader>
               <TableBody>
                 {done.map((m) => (
@@ -70,7 +72,7 @@ export default function Dossier() {
                     <TableCell className="font-mono text-xs">{new Date(m.created_at).toLocaleDateString()}</TableCell>
                     <TableCell>{m.rocket_label}</TableCell>
                     <TableCell>{m.planet_name}</TableCell>
-                    <TableCell><span className={cn("font-mono text-[11px] px-2 py-0.5 rounded border", STATUS_CLS[m.status])}>{m.status.toUpperCase()} · {m.success_pct}%</span></TableCell>
+                    <TableCell><span className={cn("font-mono text-[11px] px-2 py-0.5 rounded border", STATUS_CLS[m.status])}>{t(`s.${m.status}`)} · {m.success_pct}%</span></TableCell>
                     <TableCell className="text-right font-mono text-amber-200">+{m.points.total}</TableCell>
                   </TableRow>
                 ))}

@@ -3,6 +3,7 @@ import logging
 import httpx
 from fastapi import APIRouter, HTTPException, Query
 
+from data import i18n
 from data.nasa import CATEGORIES, PARTS, PLANETS, ROCKETS, UPGRADES
 from lib.db import db
 from lib.rocket import analyze
@@ -14,8 +15,20 @@ _image_cache: dict[str, list[NasaImage]] = {}
 
 
 @router.get("/catalog", response_model=Catalog)
-async def get_catalog():
-    return Catalog(categories=CATEGORIES, parts=PARTS, rockets=ROCKETS, planets=PLANETS, upgrades=UPGRADES)
+async def get_catalog(lang: str = Query("en", pattern="^(en|tr|de)$")):
+    if lang == "en":
+        return Catalog(categories=CATEGORIES, parts=PARTS, rockets=ROCKETS, planets=PLANETS, upgrades=UPGRADES)
+    cats = [{**c, "label": i18n.CATEGORIES[lang].get(c["id"], c["label"])} for c in CATEGORIES]
+    planets = []
+    for p in PLANETS:
+        n, f, a = i18n.PLANETS[lang].get(p["id"], (p["name"], p["fact"], p["atmosphere"]))
+        planets.append({**p, "name": n, "fact": f, "atmosphere": a})
+    ups = []
+    for u in UPGRADES:
+        n, d = i18n.UPGRADES[lang].get(u["id"], (u["name"], u["description"]))
+        ups.append({**u, "name": n, "description": d})
+    rockets = [{**r, "summary": i18n.ROCKETS[lang].get(r["id"], r["summary"])} for r in ROCKETS]
+    return Catalog(categories=cats, parts=PARTS, rockets=rockets, planets=planets, upgrades=ups)
 
 
 @router.post("/rocket/analyze", response_model=RocketAnalysis)
@@ -24,7 +37,7 @@ async def analyze_rocket(body: AnalyzeRequest):
     if body.astronaut_id:
         doc = await db.astronauts.find_one({"id": body.astronaut_id}, {"upgrades": 1})
         upgrades = (doc or {}).get("upgrades", {})
-    return analyze(body.stack, upgrades)
+    return analyze(body.stack, upgrades, body.lang)
 
 
 @router.get("/nasa/images", response_model=list[NasaImage])

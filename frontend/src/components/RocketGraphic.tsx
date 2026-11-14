@@ -1,5 +1,6 @@
 import type { Part, StackItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { THEMES, useSettings } from "@/lib/settings";
 
 const PROP_COLOR: Record<string, string> = {
   "RP-1/LOX": "#ffb300",
@@ -15,16 +16,20 @@ export function propColor(p: string | null) {
 
 /** Visual for one stack entry. scale = px per metre of diameter. */
 export function PartShape({ part, qty, scale = 12, flame = false }: { part: Part; qty: number; scale?: number; flame?: boolean }) {
+  const th = THEMES[useSettings().color];
   const w = Math.max(14, part.diameter_m * scale);
   const k = scale / 12;
+  const cap = `linear-gradient(to bottom, ${th.capsule[0]}, ${th.capsule[1]})`;
+  const body = `linear-gradient(to right, ${th.body[0]}, ${th.body[1]}, ${th.body[2]})`;
+  const noz = `linear-gradient(to bottom, ${th.nozzle[0]}, ${th.nozzle[1]})`;
   switch (part.category) {
     case "crew": {
       const h = Math.max(16, (14 + Math.sqrt(part.mass_t) * 4) * k);
       const narrow = part.id === "apollo_les";
       return (
         <div
-          style={{ width: narrow ? 8 * k + 4 : w, height: narrow ? h * 1.6 : h, clipPath: narrow ? undefined : "polygon(28% 0, 72% 0, 100% 100%, 0 100%)" }}
-          className={cn("bg-gradient-to-b from-white to-slate-300", narrow && "rounded-t-full from-slate-200 to-slate-500")}
+          style={{ width: narrow ? 8 * k + 4 : w, height: narrow ? h * 1.6 : h, clipPath: narrow ? undefined : "polygon(28% 0, 72% 0, 100% 100%, 0 100%)", background: narrow ? noz : cap }}
+          className={cn(narrow && "rounded-t-full")}
         />
       );
     }
@@ -32,8 +37,8 @@ export function PartShape({ part, qty, scale = 12, flame = false }: { part: Part
     case "lower": {
       const h = Math.max(22, Math.min(230, Math.sqrt(part.mass_t) * 4 * k));
       return (
-        <div style={{ width: w, height: h }} className="relative bg-gradient-to-r from-slate-300 via-white to-slate-300 border border-cyan-400/40">
-          <div className="absolute inset-x-0 top-1/4 h-[3px] bg-slate-900/70" />
+        <div style={{ width: w, height: h, background: body }} className="relative border border-cyan-400/40">
+          <div className="absolute inset-x-0 top-1/4 h-[3px]" style={{ background: th.band }} />
           <div className="absolute left-1 top-1 bottom-1 w-[3px] rounded" style={{ background: propColor(part.propellant) }} />
         </div>
       );
@@ -47,7 +52,7 @@ export function PartShape({ part, qty, scale = 12, flame = false }: { part: Part
         <div className="flex items-start justify-center gap-[2px]">
           {Array.from({ length: qty }).map((_, i) => (
             <div key={i} className="flex flex-col items-center">
-              <div style={{ width: nw, height: nh, clipPath: "polygon(30% 0, 70% 0, 100% 100%, 0 100%)" }} className="bg-gradient-to-b from-slate-500 to-slate-800" />
+              <div style={{ width: nw, height: nh, clipPath: "polygon(30% 0, 70% 0, 100% 100%, 0 100%)", background: noz }} />
               {flame && (
                 <div style={{ width: nw * 0.8, height: nh * 2.2 }} className="origin-top animate-flame rounded-b-full bg-gradient-to-b from-amber-200 via-orange-400 to-transparent" />
               )}
@@ -62,7 +67,7 @@ export function PartShape({ part, qty, scale = 12, flame = false }: { part: Part
         <div className="flex items-end justify-center gap-1">
           {Array.from({ length: qty }).map((_, i) => (
             <div key={i} className="flex flex-col items-center">
-              <div style={{ width: w, height: h }} className="rounded-t-full bg-gradient-to-r from-slate-400 via-slate-100 to-slate-400 border border-amber-300/30" />
+              <div style={{ width: w, height: h, background: body }} className="rounded-t-full border border-amber-300/30" />
               {flame && <div style={{ width: w * 0.8, height: 30 * k }} className="origin-top animate-flame rounded-b-full bg-gradient-to-b from-amber-100 via-orange-400 to-transparent" />}
             </div>
           ))}
@@ -71,7 +76,7 @@ export function PartShape({ part, qty, scale = 12, flame = false }: { part: Part
     }
     default: {
       if (part.id === "fairing_5m") {
-        return <div style={{ width: w, height: 40 * k, clipPath: "polygon(35% 0, 65% 0, 100% 60%, 100% 100%, 0 100%, 0 60%)" }} className="bg-gradient-to-b from-white to-slate-300" />;
+        return <div style={{ width: w, height: 40 * k, clipPath: "polygon(35% 0, 65% 0, 100% 60%, 100% 100%, 0 100%, 0 60%)", background: cap }} />;
       }
       return (
         <div style={{ width: w + 26 * k, height: 18 * k }} className="relative">

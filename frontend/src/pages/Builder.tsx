@@ -11,10 +11,13 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
+import { sfx } from "@/lib/sound";
 
 const MULTI = new Set(["engine", "booster"]);
 
 function LibraryPanel({ catalog, onAdd }: { catalog: Catalog; onAdd: (id: string) => void }) {
+  const t = useT();
   const [cat, setCat] = useState("all");
   const [q, setQ] = useState("");
   const parts = catalog.parts.filter((p) => (cat === "all" || p.category === cat) && (p.name + p.program).toLowerCase().includes(q.toLowerCase()));
@@ -22,10 +25,10 @@ function LibraryPanel({ catalog, onAdd }: { catalog: Catalog; onAdd: (id: string
     <div className="flex flex-col min-h-0 h-full" data-testid="parts-library">
       <div className="relative mb-3">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-500" />
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search NASA parts" className="pl-9 h-10 text-base bg-[#050914] font-mono" data-testid="library-search-input" />
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("lib.search")} className="pl-9 h-10 text-base bg-[#050914] font-mono" data-testid="library-search-input" />
       </div>
       <div className="flex flex-wrap gap-1.5 mb-3">
-        {[{ id: "all", label: "All" }, ...catalog.categories].map((c) => (
+        {[{ id: "all", label: t("lib.all") }, ...catalog.categories].map((c) => (
           <button key={c.id} onClick={() => setCat(c.id)} data-testid={`library-category-${c.id}`}
             className={cn("px-2.5 py-1 rounded-full text-[11px] font-mono border transition-colors duration-150",
               cat === c.id ? "border-cyan-300 bg-cyan-300/15 text-cyan-100" : "border-slate-700 text-slate-400 hover:text-white")}>
@@ -56,36 +59,31 @@ function LibraryPanel({ catalog, onAdd }: { catalog: Catalog; onAdd: (id: string
             </button>
           </div>
         ))}
-        {parts.length === 0 && <p className="text-sm text-slate-500 font-mono">No parts match.</p>}
+        {parts.length === 0 && <p className="text-sm text-slate-500 font-mono">{t("lib.none")}</p>}
       </div>
     </div>
   );
 }
 
 function GuideDialog() {
+  const t = useT();
   return (
     <Dialog>
       <DialogTrigger render={<Button variant="outline" size="sm" data-testid="open-help-guide-button" />}>
-        <BookOpen className="size-4" /> Help guide
+        <BookOpen className="size-4" /> {t("guide.btn")}
       </DialogTrigger>
       <DialogContent className="max-w-lg" data-testid="help-guide-dialog">
         <DialogHeader>
-          <DialogTitle className="font-heading">Beginner's assembly guide</DialogTitle>
-          <DialogDescription>Build from the top down, as NASA engineers stack a vehicle in the VAB.</DialogDescription>
+          <DialogTitle className="font-heading">{t("guide.title")}</DialogTitle>
+          <DialogDescription>{t("guide.desc")}</DialogDescription>
         </DialogHeader>
         <ol className="space-y-3 text-sm text-slate-300">
-          {[
-            ["Crew / payload on top", "Start with a capsule (Orion, Apollo CSM) or a payload like Perseverance."],
-            ["Upper stage + engine", "Add an upper-stage tank, then a vacuum engine (RL10, J-2) directly below it."],
-            ["Interstage (optional)", "Use an adapter between stages of different widths."],
-            ["Core stage + main engines", "A big tank (S-IC, SLS Core) with powerful engines (F-1 ×5, RS-25 ×4). Use the + button on an engine row to cluster engines."],
-            ["Boosters for liftoff", "Add solid boosters if TWR is below 1.2."],
-          ].map(([t, d], i) => (
+          {[1, 2, 3, 4, 5].map((k) => [t(`guide.s${k}t`), t(`guide.s${k}d`)]).map(([t, d], i) => (
             <li key={t} className="flex gap-3"><span className="font-mono text-cyan-300">0{i + 1}</span><div><div className="text-white">{t}</div><div className="text-slate-400">{d}</div></div></li>
           ))}
         </ol>
         <div className="rounded-lg border border-amber-400/30 bg-amber-400/5 p-3 text-xs text-amber-100 font-mono leading-relaxed">
-          Rules: an engine must burn the same propellant as the tank above it (colour stripe). RL10 and LR91 are vacuum engines and give no thrust at liftoff. Liftoff TWR must be above 1. The guide panel suggests compatible alternatives; click "Use" to swap one in.
+          {t("guide.rules")}
         </div>
       </DialogContent>
     </Dialog>
@@ -93,6 +91,7 @@ function GuideDialog() {
 }
 
 function IssueCard({ issue, parts, onFix }: { issue: GuideIssue; parts: Record<string, Part>; onFix: (issue: GuideIssue, partId: string) => void }) {
+  const t = useT();
   const Icon = issue.severity === "error" ? CircleX : issue.severity === "warning" ? TriangleAlert : Lightbulb;
   return (
     <div data-testid={`guide-issue-${issue.code}`}
@@ -106,12 +105,12 @@ function IssueCard({ issue, parts, onFix }: { issue: GuideIssue; parts: Record<s
       </div>
       {issue.alternatives.length > 0 && (
         <div className="mt-2.5 space-y-1.5">
-          <div className="hud-label text-[9px]">Alternatives</div>
+          <div className="hud-label text-[9px]">{t("alts")}</div>
           {issue.alternatives.map((a) => parts[a] && (
             <div key={a} className="flex items-center justify-between gap-2 rounded-md bg-black/30 px-2 py-1.5">
               <span className="text-xs text-slate-200 truncate">{parts[a].name}</span>
               <button onClick={() => onFix(issue, a)} data-testid={`guide-use-${issue.code}-${a}`}
-                className="text-[10px] font-mono uppercase tracking-wider px-2 py-1 rounded border border-cyan-400/40 text-cyan-200 hover:bg-cyan-400/15 transition-colors duration-150 shrink-0">Use</button>
+                className="text-[10px] font-mono uppercase tracking-wider px-2 py-1 rounded border border-cyan-400/40 text-cyan-200 hover:bg-cyan-400/15 transition-colors duration-150 shrink-0">{t("use")}</button>
             </div>
           ))}
         </div>
@@ -130,6 +129,7 @@ function Stat({ label, value, tone, testid }: { label: string; value: string; to
 }
 
 function BuilderInner({ catalog, initial, astronautId }: { catalog: Catalog; initial: Blueprint; astronautId: string }) {
+  const t = useT();
   const nav = useNavigate();
   const parts = useMemo(() => Object.fromEntries(catalog.parts.map((p) => [p.id, p])), [catalog]);
   const [stack, setStack] = useState<StackItem[]>(initial.stack);
@@ -150,6 +150,7 @@ function BuilderInner({ catalog, initial, astronautId }: { catalog: Catalog; ini
   }, [stack, label]);
 
   const insertAt = (pos: number, partId: string, qty = 1) => {
+    sfx.click();
     setStack((s) => [...s.slice(0, pos), { part_id: partId, qty }, ...s.slice(pos)]);
     setSel(pos);
   };
@@ -183,7 +184,7 @@ function BuilderInner({ catalog, initial, astronautId }: { catalog: Catalog; ini
     else if (cat === "booster") insertAt(stack.length, partId, 2);
     else if (idx !== null) replace(idx, partId);
     else insertAt(stack.length, partId);
-    toast.success(`${parts[partId]?.name} fitted`);
+    toast.success(t("fitted", { name: parts[partId]?.name ?? "" }));
   };
 
   const launch = async () => {
@@ -202,23 +203,23 @@ function BuilderInner({ catalog, initial, astronautId }: { catalog: Catalog; ini
       <div className="flex flex-wrap items-center gap-2 px-4 lg:px-6 py-3 border-b border-cyan-500/10">
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
           <SheetTrigger render={<Button variant="outline" size="sm" className="lg:hidden" data-testid="open-library-sheet-button" />}>
-            <Library className="size-4" /> Library
+            <Library className="size-4" /> {t("library")}
           </SheetTrigger>
           <SheetContent side="left" className="w-[88vw] sm:max-w-sm p-4 bg-[#0d1424]">
-            <SheetHeader className="p-0 mb-2"><SheetTitle className="font-heading">NASA parts library</SheetTitle></SheetHeader>
+            <SheetHeader className="p-0 mb-2"><SheetTitle className="font-heading">{t("library")}</SheetTitle></SheetHeader>
             <LibraryPanel catalog={catalog} onAdd={addEnd} />
           </SheetContent>
         </Sheet>
         <div className="flex items-center gap-2">
-          <span className="hud-label hidden sm:inline">Vehicle</span>
+          <span className="hud-label hidden sm:inline">{t("vehicle")}</span>
           <Input value={label} onChange={(e) => setLabel(e.target.value)} className="h-9 w-44 sm:w-56 font-mono bg-[#050914] text-base sm:text-sm" data-testid="rocket-name-input" />
         </div>
-        <span className="font-mono text-[10px] text-slate-500" data-testid="save-status">{isPending ? "SAVING…" : "SAVED"}</span>
+        <span className="font-mono text-[10px] text-slate-500" data-testid="save-status">{isPending ? t("saving") : t("saved")}</span>
         <div className="ml-auto flex items-center gap-2">
           <GuideDialog />
-          <Button variant="ghost" size="sm" onClick={() => { setStack([]); setSel(null); }} data-testid="clear-stack-button"><Eraser className="size-4" /> Clear</Button>
+          <Button variant="ghost" size="sm" onClick={() => { setStack([]); setSel(null); }} data-testid="clear-stack-button"><Eraser className="size-4" /> {t("clear")}</Button>
           <Button size="sm" disabled={!analysis?.ready} onClick={launch} data-testid="go-to-launch-button" className="font-mono uppercase tracking-wider">
-            <Rocket className="size-4" /> Launch mission
+            <Rocket className="size-4" /> {t("launchMission")}
           </Button>
         </div>
       </div>
@@ -237,7 +238,7 @@ function BuilderInner({ catalog, initial, astronautId }: { catalog: Catalog; ini
               <motion.div initial={{ width: 0, opacity: 0 }} animate={{ width: 300, opacity: 1 }} exit={{ width: 0, opacity: 0 }} transition={{ duration: 0.22 }}
                 className="overflow-hidden rounded-xl border border-cyan-500/20 bg-slate-900/60">
                 <div className="w-[300px] h-full p-4 flex flex-col min-h-0">
-                  <div className="hud-label mb-3">NASA parts library · {catalog.parts.length} parts</div>
+                  <div className="hud-label mb-3">{t("lib.title", { n: catalog.parts.length })}</div>
                   <LibraryPanel catalog={catalog} onAdd={(id) => insertAt(stack.length, id)} />
                 </div>
               </motion.div>
@@ -252,14 +253,14 @@ function BuilderInner({ catalog, initial, astronautId }: { catalog: Catalog; ini
           onDrop={(e) => handleDrop(stack.length, e)}
           data-testid="blueprint-canvas"
         >
-          <div className="absolute top-3 left-4 hud-label pointer-events-none">Blueprint · top = nose</div>
-          <div className="absolute top-3 right-4 font-mono text-[10px] text-cyan-300/60 pointer-events-none">{stack.length} parts</div>
+          <div className="absolute top-3 left-4 hud-label pointer-events-none">{t("bp.label")}</div>
+          <div className="absolute top-3 right-4 font-mono text-[10px] text-cyan-300/60 pointer-events-none">{t("bp.parts", { n: stack.length })}</div>
           {stack.length === 0 ? (
             <div className="h-full min-h-[420px] grid place-items-center text-center px-6" data-testid="blueprint-empty">
               <div>
                 <div className="mx-auto mb-4 size-16 rounded-full border border-dashed border-cyan-400/50 grid place-items-center"><Plus className="size-6 text-cyan-300" /></div>
-                <p className="font-heading text-xl text-white">Drag parts here</p>
-                <p className="text-sm text-slate-400 mt-1 max-w-xs">Drag parts from the library, or tap + on a part. Start with a capsule at the top.</p>
+                <p className="font-heading text-xl text-white">{t("bp.emptyT")}</p>
+                <p className="text-sm text-slate-400 mt-1 max-w-xs">{t("bp.emptyD")}</p>
               </div>
             </div>
           ) : (
@@ -305,10 +306,10 @@ function BuilderInner({ catalog, initial, astronautId }: { catalog: Catalog; ini
                 data-testid="drop-zone-end"
                 className={cn("mt-2 w-full max-w-[420px] rounded border border-dashed text-center font-mono text-[10px] py-2 transition-colors duration-150",
                   overIdx === stack.length ? "border-cyan-300 bg-cyan-400/20 text-cyan-100" : "border-cyan-500/20 text-cyan-300/50")}>
-                DROP BELOW TO ADD
+                {t("dropBelow")}
               </div>
               <div className="mt-3 h-1 w-64 bg-gradient-to-r from-transparent via-slate-500 to-transparent" />
-              <div className="font-mono text-[9px] text-slate-500 mt-1">LAUNCH PAD</div>
+              <div className="font-mono text-[9px] text-slate-500 mt-1">{t("launchPad")}</div>
             </div>
           )}
         </section>
@@ -316,19 +317,19 @@ function BuilderInner({ catalog, initial, astronautId }: { catalog: Catalog; ini
         {/* telemetry + guide */}
         <aside className="min-h-0 overflow-y-auto rounded-xl border border-cyan-500/20 bg-slate-900/60 p-4 space-y-4" data-testid="guide-panel">
           <div>
-            <div className="hud-label mb-2">Vehicle telemetry</div>
+            <div className="hud-label mb-2">{t("telemetry")}</div>
             <div className="grid grid-cols-2 gap-2">
-              <Stat testid="stat-mass" label="Mass" value={`${stats?.total_mass_t ?? 0} t`} />
-              <Stat testid="stat-thrust" label="Liftoff thrust" value={`${((stats?.liftoff_thrust_kn ?? 0) / 1000).toFixed(1)} MN`} />
+              <Stat testid="stat-mass" label={t("stat.mass")} value={`${stats?.total_mass_t ?? 0} t`} />
+              <Stat testid="stat-thrust" label={t("stat.thrust")} value={`${((stats?.liftoff_thrust_kn ?? 0) / 1000).toFixed(1)} MN`} />
               <Stat testid="stat-twr" label="TWR" value={(stats?.twr ?? 0).toFixed(2)} tone={(stats?.twr ?? 0) >= 1 ? "text-emerald-300" : "text-rose-300"} />
-              <Stat testid="stat-dv" label="Δv (ideal)" value={`${((stats?.delta_v_ms ?? 0) / 1000).toFixed(2)} km/s`} tone="text-cyan-200" />
+              <Stat testid="stat-dv" label={t("stat.dv")} value={`${((stats?.delta_v_ms ?? 0) / 1000).toFixed(2)} km/s`} tone="text-cyan-200" />
             </div>
           </div>
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="hud-label">Flight engineering guide</span>
+              <span className="hud-label">{t("guidePanel")}</span>
               <span className={cn("font-mono text-[10px] px-2 py-0.5 rounded-full border", analysis?.ready ? "border-emerald-400/50 text-emerald-300" : "border-rose-400/50 text-rose-300")} data-testid="ready-badge">
-                {analysis?.ready ? "GO" : "NO-GO"}
+                {analysis?.ready ? t("go") : t("nogo")}
               </span>
             </div>
             <div className="space-y-2">
@@ -337,7 +338,7 @@ function BuilderInner({ catalog, initial, astronautId }: { catalog: Catalog; ini
           </div>
           {sel !== null && stack[sel] && parts[stack[sel].part_id] && (
             <div className="rounded-lg border border-cyan-500/20 p-3" data-testid="selected-part-details">
-              <div className="hud-label mb-1">Selected part</div>
+              <div className="hud-label mb-1">{t("selPart")}</div>
               <div className="text-white text-sm">{parts[stack[sel].part_id].name}</div>
               <p className="text-xs text-slate-400 mt-1">{parts[stack[sel].part_id].description}</p>
               <div className="grid grid-cols-2 gap-x-3 gap-y-1 mt-2 font-mono text-[11px] text-slate-300">
@@ -353,11 +354,12 @@ function BuilderInner({ catalog, initial, astronautId }: { catalog: Catalog; ini
 }
 
 export default function Builder() {
+  const t = useT();
   const id = useAstronautId();
   const { data: catalog } = useCatalog();
   const { data: astro } = useAstronaut();
   if (!catalog || !astro || !id) {
-    return <div className="p-10 font-mono text-sm text-cyan-300/70" data-testid="builder-loading">Loading vehicle assembly building…</div>;
+    return <div className="p-10 font-mono text-sm text-cyan-300/70" data-testid="builder-loading">{t("loadingVab")}</div>;
   }
   return <BuilderInner key={astro.id} catalog={catalog} initial={astro.blueprint} astronautId={id} />;
 }

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { useCallback, useSyncExternalStore } from "react";
 import { apiGet, apiPost, apiPut } from "@/lib/api";
+import { useSettings } from "@/lib/settings";
 import type { Astronaut, Blueprint, Catalog, NasaImage, RocketAnalysis, StackItem } from "@/lib/types";
 
 const KEY = "astro_id";
@@ -26,13 +27,15 @@ export function useAstronaut() {
 }
 
 export function useCatalog() {
-  return useQuery({ queryKey: ["catalog"], queryFn: () => apiGet<Catalog>("/catalog"), staleTime: Infinity });
+  const { lang } = useSettings();
+  return useQuery({ queryKey: ["catalog", lang], queryFn: () => apiGet<Catalog>(`/catalog?lang=${lang}`), staleTime: Infinity, placeholderData: keepPreviousData });
 }
 
 export function useAnalysis(stack: StackItem[], astronautId: string | null) {
+  const { lang } = useSettings();
   return useQuery({
-    queryKey: ["analyze", stack, astronautId],
-    queryFn: () => apiPost<RocketAnalysis>("/rocket/analyze", { stack, astronaut_id: astronautId }),
+    queryKey: ["analyze", stack, astronautId, lang],
+    queryFn: () => apiPost<RocketAnalysis>("/rocket/analyze", { stack, astronaut_id: astronautId, lang }),
     placeholderData: keepPreviousData,
   });
 }
